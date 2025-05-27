@@ -1,4 +1,4 @@
-# 計算量　O(n*mlogm+q*mlogm) 
+# 計算量　O(n*mlogm+nlogn+q*mlogm+q*logn) 
 # n:辞書の文字列(word)の数, m:文字列(word,string)の平均の長さ, q:クエリ数
 
 # words.txtからsort済みwordと元のwordをタプルにしたang_listを作成:O(n*mlogm+nlogn)
