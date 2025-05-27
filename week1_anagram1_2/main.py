@@ -1,8 +1,10 @@
+# 計算量　O(n*mlogm+q*mlogm) 
+# n:辞書の文字列(word)の数, m:文字列(word,string)の平均の長さ, q:クエリ数
 
-# words.txtからsort済みwordと元のwordをタプルにしたang_listを作成
-# ソート順になっているang_listを二分探索し、sort_stringがang_listにあった場合に入る場所をインデックスで返す
-# ang_listのタプル第一要素(sort_word)がsort_stringと一致する間のみ探索を続け、そのうち第二要素(word)がstringと一致しないもののみを出力する
-# anagramが見つからなかった場合は"Not found"と表示
+# words.txtからsort済みwordと元のwordをタプルにしたang_listを作成:O(n*mlogm+nlogn)
+# 文字列の入力をstringで受け取り、ソートしてsort_stringを作成:O(q*mlogm)
+# ソート順になっているang_listを二分探索し、sort_stringがang_listにあった場合に入る場所をインデックスで返す:O(q*logn)
+# ang_listのタプル第一要素(sort_word)がsort_stringと一致する間のみ探索を続け、そのうち第二要素(word)がstringと一致しないもののみを出力する:O(q*7)(anagram同士である辞書内の要素は最大で7つであった)
 
 from dictionary import create_list
 from search import binary_search
