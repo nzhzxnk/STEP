@@ -15,30 +15,40 @@ def find_max_anagram(string,ang_dict,counter_dict,score_dict):
     # 入力(string)を受け取りソートして、string_counterを作成
     string_counter_dict = string_counter(string)
     # substring_checkがTrue(部分文字列から作成可能)かつword_scoreが最大となるsort_wordを出力
-    max_score = 0
+    max_score = -1
     max_score_word = None
     for sort_word,required in counter_dict.items():
         if substring_check(string_counter_dict,required):
-            if max_score < score_dict[sort_word]:
-                max_score = score_dict[sort_word]
+            # 元のstringと同じものであれば排除する
+            # ang_dict[sort_word] はリストなので、stringがそのリストに含まれているかチェック
+            # かつ、そのsort_wordに対応するアナグラムが元のstringしかない場合
+            # 元のstringしかアナグラムがない場合はスキップ
+            if string in ang_dict[sort_word] and len(ang_dict[sort_word]) == 1:
+                continue
+            current_score = score_dict.get(sort_word, 0) # score_dictにない場合も考慮
+            if max_score_word is None or current_score > max_score: # max_score_wordがNoneの場合の初期化
+                max_score = current_score
                 max_score_word = sort_word
-    # 元のstringと同じものがあっても排除しないことにする
-    return ang_dict[max_score_word]
-
+    if max_score_word:
+        return ang_dict[max_score_word][0]
+    else:
+        return None
+    
 # 入力(string)を受け取りソートして、string_counter_dict(含まれている文字の種類と数を対応させた辞書)を作成
 def string_counter(string):
     sort_string = "".join(sorted(string))
     string_counter_dict={}
-    now = None
-    count = 0
-    for i in range(len(sort_string)):
+    if not sort_string: # 空文字列の場合のハンドリング
+        return string_counter_dict
+    now = sort_string[0]
+    count = 1
+    for i in range(1,len(sort_string)):
         if now == sort_string[i]:
             count += 1
         else:
-            if not now:
-                string_counter_dict[now] = count
-                now = sort_string[i]
-                count = 1
+            string_counter_dict[now] = count
+            now = sort_string[i]
+            count = 1
     string_counter_dict[now] = count
     return string_counter_dict
 
@@ -50,7 +60,7 @@ def substring_check(string_counter_dict,required):
     return True
 
 # stringを1クエリとして扱いfin_max_anagram関数を実行
-def main(link):
+def main(link,output_filename="output.txt"):
     # ang_dictを元に、score_dict(sort_wordとword_score),counter_dict(sort_word,word_counter)を作成
     ang_dict = create_ang_dict()
     counter_dict = create_counter_dict(ang_dict)
@@ -58,11 +68,17 @@ def main(link):
     # linkから入力を受け取る
     response = requests.get(link)
     lines = response.text.splitlines()
-    for string in lines:
-        print(find_max_anagram(string,ang_dict,counter_dict,score_dict))
+    # ファイル書き込みのためにopen関数を使用
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        for string in lines:
+            result = find_max_anagram(string, ang_dict, counter_dict, score_dict)
+            if result:
+                f.write(result + '\n')
+            else:
+                f.write("\n") # 見つからなかった場合は空行を出力
 
 if __name__ == "__main__":
-    main("https://github.com/xharaken/step2/blob/master/anagram/small.txt")
-    # main("https://github.com/xharaken/step2/blob/master/anagram/medium.txt")
-    # main("https://github.com/xharaken/step2/blob/master/anagram/large.txt")
+    main("https://raw.githubusercontent.com/xharaken/step2/refs/heads/master/anagram/small.txt","small_answer.txt")
+    main("https://raw.githubusercontent.com/xharaken/step2/refs/heads/master/anagram/medium.txt","medium_answer.txt")
+    main("https://raw.githubusercontent.com/xharaken/step2/refs/heads/master/anagram/large.txt","large_answer.txt")
 

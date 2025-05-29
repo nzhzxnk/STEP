@@ -20,6 +20,10 @@ def create_counter_dict(ang_dict):
     counter_dict = {}
     for sort_word in ang_dict:
         each_dict={}
+        # 空文字の場合
+        if not sort_word:
+            counter_dict[sort_word] = each_dict
+            continue
         now = sort_word[0]
         count = 1
         for i in range(1,len(sort_word)):
@@ -34,18 +38,18 @@ def create_counter_dict(ang_dict):
     return counter_dict
 
 def create_score_dict(counter_dict):
+    score_map = {
+        'a': 1, 'e': 1, 'h': 1, 'i': 1, 'n': 1, 'o': 1, 'r': 1, 's': 1, 't': 1,
+        'c': 2, 'd': 2, 'l': 2, 'm': 2, 'u': 2,
+        'b': 3, 'f': 3, 'g': 3, 'p': 3, 'v': 3, 'w': 3, 'y': 3,
+        'j': 4, 'k': 4, 'q': 4, 'x': 4, 'z': 4
+    }
     score_dict = {}
-    for sort_word,each_dict in counter_dict.items():
+    for sort_word, each_dict in counter_dict.items():
         score = 0
-        for key,value in each_dict.items():
-            if key in "aehinorst":
-                score += value
-            elif key in "cdlmu":
-                score += value*2
-            elif key in "bfgpvwy":
-                score += value*3
-            else:
-                score += value*4
+        for char, num in each_dict.items():
+            score += score_map.get(char, 0) * num 
+            # mapから数を取ってくる。mapない文字は0点とする。
         score_dict[sort_word] = score
     return score_dict
 
