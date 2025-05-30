@@ -1,6 +1,5 @@
-#コードレビュー
 
-## Anagram2
+## [Case1 (Anagram2)](https://github.com/Rei-0a/STEP/blob/main/01_Anagram/Anagram_02.py)
 
 1.[辞書の形式](https://github.com/Rei-0a/STEP/blob/main/01_Anagram/Anagram_02.py#L31)
 
