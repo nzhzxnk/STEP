@@ -25,3 +25,4 @@
 * 木構造の方が好まれる理由を4,5個
 * ディスクスワップとは？
 * desigin Documentdで自分のコードをわかりやすくmarkdownできちんとかく！！
+* なんで[このスライド](https://docs.google.com/presentation/d/1T8YYMqaf-LPgiIv75bG8r6HaP-WNC4dZgz3Las5TGD8/edit?slide=id.g23c41adceb3_0_14#slide=id.g23c41adceb3_0_14)のようになるのか
