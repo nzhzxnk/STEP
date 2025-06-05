@@ -2,7 +2,7 @@
 
 # *** what is the changes? ***
 # hash function: sum just ASCII code --> add by incrementary shifting place value and sum up
-# bucket_size: not chnged. 
+# bucket_size: not changed. 
 #              always fixed. size < 100 or used bucket >= 30%.
 
 import random, sys, time
@@ -47,7 +47,7 @@ class HashTable:
     def __init__(self):
         # Note: Use prime number for bucket_size to reduce hash conflicts.
         # Note: rehash to fit data size
-        self.bucket_size = 1000003
+        self.bucket_size = 97
         self.buckets = [None] * self.bucket_size
         self.item_count = 0
 

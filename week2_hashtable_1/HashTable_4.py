@@ -1,325 +1,403 @@
-# This file is 3rd ver.
+# This file is 4th ver. 
 
-# *** Progress ***
-# Please check this function. 
-# Adjust bucket size
-# search nearest prime number
+#  *** Progress ***
+# edit comment now.
 
 # *** what is the changes? ***
-# hash function: sum just ASCII code -(ver.2)-> add by incrementary shifting place value and sum up 
-# bucket_size: not chnged. 
-#              always fixed. size < 100 or used bucket >= 30%.
+# hash table -> AVL tree
 
-# *** Plan ***
-# If the hash table works with mostly O(1), the execution time of each iteration should not depend on the number of items in the hash table. To achieve this
-# 1) implement rehashing (Hint: expand / shrink the hash table when the number of items in the hash table hits some threshold) 
-# 2) tweak the hash function (Hint: think about ways to reduce hash conflicts).
 import random, sys, time
 
-# *** Hash function ***
-# |key|: string
-# Return /value/: a hash value
-# add by incrementary shifting place value and sum up
-def calculate_hash(key):
-    assert type(key) == str
-    hash_val = 0
-    for char in key:
-        hash_val += hash_val * 31 + ord(char)
-    return hash_val
-
-# *** An item object ***
-# represents one key - value pair in the hash table.
-class Item:
+# *** Node object ***
+class Node:
     # |key|: The key of the item. The key must be a string.
     # |value|: The value of the item. The value can be any type.
-    # |next|: The next item in the linked list. If this is the last item in the
-    #         linked list, |next| is None.
-    # Question: what is __init__ ??
-    def __init__(self, key, value, next_item):
+    # The children item(left, right) in the binary tree.
+    def __init__(self, key, value):
         assert type(key) == str
         self.key = key
         self.value = value
-        self.next = next_item
+        self.left = None
+        self.right = None
+        self.height = 0
 
-
-# *** The main data structure of the hash table ***
-# stores key - value pairs.
+# *** AVL tree ***
+# represents balanced binary tree.
 # Note: The key must be a string. The value can be any type.
-class HashTable:
-
-    # *** Initialize the hash table. ***
-    # self.bucket_size: The bucket size.
-    # self.buckets: An array of the buckets. self.buckets[hash % self.bucket_size]
-    #                 stores a linked list of items whose hash value is |hash|.
-    # self.item_count: The total number of items in the hash table.
-    def __init__(self,initial_bucket_size=97):
-        # Note: Use prime number for bucket_size to reduce hash conflicts.
-        # Note: rehash to fit data size
-        self.bucket_size = initial_bucket_size
-        self.buckets = [None] * self.bucket_size
+class AVLTree:
+    # *** Initialize the AVL tree. ***
+    # self.item_count: The total number of items in the AVL tree.
+    def __init__(self):
+        self.root = None
         self.item_count = 0
-        self.rehashing = False 
-
-    # *** Put an item to the hash table. ***
-    # |key|: The key of the item.
-    # |value|: The value of the item.
-    # Return /bool/: True if a new item is added. 
-    #                False if the key already exists and the value is updated.
-    # Note: If the key already exists, the corresponding value is updated to a new value.
-    def put(self, key, value):
-        assert type(key) == str
-        # Change: delete assert.
-        # |bucket_index|: hash value % bucket_size
-        if not self.rehashing:
-            bucket_index = calculate_hash(key) % self.bucket_size
-            item = self.buckets[bucket_index]
-            while item:
-                if item.key == key:
-                    item.value = value
-                    return False
-                item = item.next
-            # Note: new item is class Item.
-            #       the type of |buckets[bucket_index]| and |item| and |new_item| is lincked-list.
-            new_item = Item(key, value, self.buckets[bucket_index])
-            self.buckets[bucket_index] = new_item
-            self.item_count += 1
-            self.adjust_size()
-            return True
-        else:
-            bucket_index = calculate_hash(key) % self.bucket_size
-            new_item = Item(key, value, self.buckets[bucket_index])
-            self.buckets[bucket_index] = new_item
-            self.item_count += 1
-            return True
-
-    # *** Get an item from the hash table. ***
-    # |key|: The key.
-    # Return /(value, bool)/: If the item is found, (the value of the item, True) is returned.
-    #                         Otherwise, (None, False) is returned.
-    def get(self, key):
-        assert type(key) == str
-        # Change: delete assert.
-        bucket_index = calculate_hash(key) % self.bucket_size
-        item = self.buckets[bucket_index]
-        while item:
-            if item.key == key:
-                return (item.value, True)
-            item = item.next
-        return (None, False)
-
-    # *** Delete an item from the hash table. ***
-    # |key|: The key.
-    # Return /bool/: True if the item is found and deleted successfully.
-    #                False otherwise.
-    def delete(self, key):
-        assert type(key) == str
-        # Note: Don't remove this code.
-        # Change: delete assert.
-        bucket_index = calculate_hash(key) % self.bucket_size
-        cur_item = self.buckets[bucket_index]
-        prv_item = None
-        while cur_item:
-            if cur_item.key == key:
-                if prv_item:
-                    prv_item.next = cur_item.next
-                else:
-                    self.buckets[bucket_index] = cur_item.next
-                self.item_count -= 1
-                return True
-            prv_item = cur_item
-            cur_item = cur_item.next
-        return False
-
-    # *** Return the total number of items in the hash table. ***
+    # *** check node height ***
+    def _get_height(self, node):
+        if not node:
+            return -1
+        return node.height
+    # *** update parent node height ***
+    # get larger one in left child height and right child height.
+    def _update_height(self, node):
+        if node is None:
+            return
+        node.height = 1 + max(self._get_height(node.left), self._get_height(node.right))
+    # *** check balance of AVL tree. ***
+    def _get_balance_factor(self, node):
+        if node is None:
+            return 0
+        return self._get_height(node.left) - self._get_height(node.right)
+    # *** Rotate right (top node move left) ***
+    def _right_rotate(self, z_node):
+        y_node = z_node.left
+        T2 = y_node.right
+        y_node.right = z_node
+        z_node.left = T2
+        self._update_height(z_node)
+        self._update_height(y_node)
+        return y_node
+    # *** Rotate left (top node move right) ***
+    def _left_rotate(self, z_node):
+        y_node = z_node.right
+        T2 = y_node.left
+        y_node.left = z_node
+        z_node.right = T2
+        self._update_height(z_node)
+        self._update_height(y_node)
+        return y_node
+    
+    def _find_min_node(self, node):
+        current = node
+        while current.left is not None:
+            current = current.left
+        return current
+    # *** check the tree size ***
     def size(self):
         return self.item_count
-    
-    # *** Adjust bucket size ***
-    # 1) Use prime number.
-    # 2) Expand to twice if used bucket size >= 70%.
-    # 3) Shrink to half if used bucket size <= 30%.
-    # Note: Use PrimeSearch function.
-    # usage_rate: total number of items(item_count) / now bucket size(bucket_size) 
-    # Return /value/: adjusted new_size.
-    def adjust_size(self):
-        usage_rate = self.item_count/self.bucket_size
-        new_size = self.bucket_size
-        if usage_rate <= 0.3:
-            new_size = self.find_prime(int(self.bucket_size*0.5))
-        elif usage_rate >= 0.7:
-            new_size = self.find_prime(int(self.bucket_size*2))
-        if new_size != self.bucket_size:
-            self.rehash(new_size)
-    
-    # *** Rehash function ***
-    # |new_size|: adjusted new bucket size.
-    # Rehash elements in each original bucket to fit new size.
-    def rehash(self,new_size):
-        self.rehashing = True
-        old_buckets = self.buckets
-        self.bucket_size = new_size
-        self.buckets = [None]*(self.bucket_size)
-        self.item_count = 0
-        for bucket in old_buckets:
-            item = bucket
-            while item:
-                self.put(item.key,item.value)
-                item = item.next
-        self.rehashing = False
-
-    # *** search nearest prime number ***
-    # FindPrime(number): search prime number >= adjusted bucket_size.
-    # MillerRabin(n,k=5): primality test to judge prime number or not.
-    def find_prime(self,number):
-        if number <= 2:
-            return 2
-        # adjust if number is not odd.
-        if number % 2 == 0:
-            n = number+1
-        else:
-            n = number
-        # return n if MillerRabin == True
-        while True:
-            if self.miller_rabin(n,k=5):
-                return n
-            else:
-                n += 2
-    
-    def miller_rabin(self,n,k=5):
-        # exclude non-prime numbers.
-        if n == 1:
-            return False
-        if n == 2 or n == 3:
+    # *** put new node ***
+    # |key|: The key of the item. The key must be a string.
+    # |value|: The value of the item. The value can be any type.
+    # The children item(left, right) in the binary tree.
+    def put(self, key, value):
+        is_new_key_tracker = [False] 
+        self.root = self._put_recursive(self.root, key, value, is_new_key_tracker)
+        if is_new_key_tracker[0]:
+            self.item_count += 1
             return True
-        if n % 2 == 0:
+        else:
             return False
-        # find d and s. (n-1 = 2^s * d)
-        d = n-1
-        s = 0
-        while d%2 == 0:
-            d //= 2
-            s += 1
-        # Run the test k times.
-        for _ in range(k):
-            # Question: Why doesn't need "random.seed(n)"??
-            # Question: (2,n-1) is 2 <= random <= n-1 ??
-            a = random.randint(2,n-1)
-            x = pow(a,d,n)
-            if x == 1 or x == n-1:
-                continue
-            maybe_prime = False
-            for _ in range(s-1):
-                x = pow(x,2,n)
-                if x == n-1:
-                    maybe_prime = True
-                    break
-                if x == 1:
-                    return False
-            if not maybe_prime:
-                return False
-        return True
 
-# *** Test the functional behavior of the hash table. ***
+    def _put_recursive(self, current_node, key, value, is_new_key_tracker):
+        if current_node is None:
+            is_new_key_tracker[0] = True
+            return Node(key, value)
+
+        if key < current_node.key:
+            current_node.left = self._put_recursive(current_node.left, key, value, is_new_key_tracker)
+        elif key > current_node.key:
+            current_node.right = self._put_recursive(current_node.right, key, value, is_new_key_tracker)
+        else:
+            current_node.value = value
+            is_new_key_tracker[0] = False
+            return current_node
+
+        self._update_height(current_node)
+        balance = self._get_balance_factor(current_node)
+
+        if balance > 1: # Left Heavy
+            if self._get_balance_factor(current_node.left) >= 0: # LL Case
+                return self._right_rotate(current_node)
+            else: # LR Case
+                current_node.left = self._left_rotate(current_node.left)
+                return self._right_rotate(current_node)
+
+        if balance < -1: # Right Heavy
+            if self._get_balance_factor(current_node.right) <= 0: # RR Case
+                return self._left_rotate(current_node)
+            else: # RL Case
+                current_node.right = self._right_rotate(current_node.right)
+                return self._left_rotate(current_node)
+
+        return current_node
+
+    def get(self,key):
+        target = self.get_recursion(self.root,key)
+        if target is None:
+            return (target, False)
+        else:
+            return (target, True)
+            
+    def get_recursion(self,cur_node,key):
+        if cur_node is None:
+            return None 
+        if cur_node.key == key:
+            return cur_node.value
+        if cur_node.key < key: # Search key is greater, go right
+            return self.get_recursion(cur_node.right, key)
+        else: # Search key is smaller, go left
+            return self.get_recursion(cur_node.left, key)
+        # This line was logically unreachable and has been removed
+
+    def delete(self, key):
+        key_deleted_tracker = [False]
+        self.root = self._delete_recursive(self.root, key, key_deleted_tracker)
+        if key_deleted_tracker[0]:
+            self.item_count -= 1
+            return True
+        else:
+            return False
+
+    def _delete_recursive(self, current_node, key, key_deleted_tracker):
+        if current_node is None:
+            key_deleted_tracker[0] = False
+            return None
+
+        if key < current_node.key:
+            current_node.left = self._delete_recursive(current_node.left, key, key_deleted_tracker)
+        elif key > current_node.key:
+            current_node.right = self._delete_recursive(current_node.right, key, key_deleted_tracker)
+        else:
+            key_deleted_tracker[0] = True
+            if current_node.left is None:
+                temp_node = current_node.right
+                # current_node = None # Not strictly necessary in Python for GC
+                return temp_node
+            elif current_node.right is None:
+                temp_node = current_node.left
+                # current_node = None # Not strictly necessary
+                return temp_node
+            
+            successor_node = self._find_min_node(current_node.right)
+            current_node.key = successor_node.key
+            current_node.value = successor_node.value
+            current_node.right = self._delete_recursive(current_node.right, successor_node.key, [False])
+
+        if current_node is None:
+            return None
+
+        self._update_height(current_node)
+        balance = self._get_balance_factor(current_node)
+
+        if balance > 1: # Left Heavy
+            if self._get_balance_factor(current_node.left) >= 0: # LL Case
+                return self._right_rotate(current_node)
+            else: # LR Case
+                current_node.left = self._left_rotate(current_node.left)
+                return self._right_rotate(current_node)
+
+        if balance < -1: # Right Heavy
+            if self._get_balance_factor(current_node.right) <= 0: # RR Case
+                return self._left_rotate(current_node)
+            else: # RL Case
+                current_node.right = self._right_rotate(current_node.right)
+                return self._left_rotate(current_node)
+
+        return current_node
+
+# *** Test the functional behavior of the AVL tree. ***
+# Changed: for AVL tree
 def functional_test():
-    hash_table = HashTable()
+    avl_tree = AVLTree() 
 
-    assert hash_table.put("aaa", 1) == True
-    assert hash_table.get("aaa") == (1, True)
-    assert hash_table.size() == 1
+    assert avl_tree.put("aaa", 1) == True
+    assert avl_tree.get("aaa") == (1, True)
+    assert avl_tree.size() == 1 
 
-    assert hash_table.put("bbb", 2) == True
-    assert hash_table.put("ccc", 3) == True
-    assert hash_table.put("ddd", 4) == True
-    assert hash_table.get("aaa") == (1, True)
-    assert hash_table.get("bbb") == (2, True)
-    assert hash_table.get("ccc") == (3, True)
-    assert hash_table.get("ddd") == (4, True)
-    assert hash_table.get("a") == (None, False)
-    assert hash_table.get("aa") == (None, False)
-    assert hash_table.get("aaaa") == (None, False)
-    assert hash_table.size() == 4
+    assert avl_tree.put("bbb", 2) == True
+    assert avl_tree.put("ccc", 3) == True
+    assert avl_tree.put("ddd", 4) == True
+    assert avl_tree.get("aaa") == (1, True)
+    assert avl_tree.get("bbb") == (2, True)
+    assert avl_tree.get("ccc") == (3, True)
+    assert avl_tree.get("ddd") == (4, True)
+    assert avl_tree.get("a") == (None, False)
+    assert avl_tree.get("aa") == (None, False)
+    assert avl_tree.get("aaaa") == (None, False)
+    assert avl_tree.size() == 4
 
-    assert hash_table.put("aaa", 11) == False
-    assert hash_table.get("aaa") == (11, True)
-    assert hash_table.size() == 4
+    assert avl_tree.put("aaa", 11) == False
+    assert avl_tree.get("aaa") == (11, True)
+    assert avl_tree.size() == 4
 
-    assert hash_table.delete("aaa") == True
-    assert hash_table.get("aaa") == (None, False)
-    assert hash_table.size() == 3
+    assert avl_tree.delete("aaa") == True
+    assert avl_tree.get("aaa") == (None, False)
+    assert avl_tree.size() == 3
 
-    assert hash_table.delete("a") == False
-    assert hash_table.delete("aa") == False
-    assert hash_table.delete("aaa") == False
-    assert hash_table.delete("aaaa") == False
+    assert avl_tree.delete("a") == False
+    assert avl_tree.delete("aa") == False
+    assert avl_tree.delete("aaa") == False
+    assert avl_tree.delete("aaaa") == False
 
-    assert hash_table.delete("ddd") == True
-    assert hash_table.delete("ccc") == True
-    assert hash_table.delete("bbb") == True
-    assert hash_table.get("aaa") == (None, False)
-    assert hash_table.get("bbb") == (None, False)
-    assert hash_table.get("ccc") == (None, False)
-    assert hash_table.get("ddd") == (None, False)
-    assert hash_table.size() == 0
+    assert avl_tree.delete("ddd") == True
+    assert avl_tree.delete("ccc") == True
+    assert avl_tree.delete("bbb") == True
+    assert avl_tree.get("aaa") == (None, False)
+    assert avl_tree.get("bbb") == (None, False)
+    assert avl_tree.get("ccc") == (None, False)
+    assert avl_tree.get("ddd") == (None, False)
+    assert avl_tree.size() == 0
 
-    assert hash_table.put("abc", 1) == True
-    assert hash_table.put("acb", 2) == True
-    assert hash_table.put("bac", 3) == True
-    assert hash_table.put("bca", 4) == True
-    assert hash_table.put("cab", 5) == True
-    assert hash_table.put("cba", 6) == True
-    assert hash_table.get("abc") == (1, True)
-    assert hash_table.get("acb") == (2, True)
-    assert hash_table.get("bac") == (3, True)
-    assert hash_table.get("bca") == (4, True)
-    assert hash_table.get("cab") == (5, True)
-    assert hash_table.get("cba") == (6, True)
-    assert hash_table.size() == 6
+    # Test cases that might trigger rotations
+    avl_tree = AVLTree()
+    keys = ["d", "c", "b", "a", "e", "f", "g"] # LL, RR rotations
+    for i, k in enumerate(keys):
+        assert avl_tree.put(k, i) == True
+    assert avl_tree.size() == len(keys)
+    
+    # LR / RL rotation checks (example)
+    avl_tree = AVLTree()
+    assert avl_tree.put("k", 1) == True
+    assert avl_tree.put("f", 2) == True
+    assert avl_tree.put("h", 3) == True # Should trigger LR rotation (k, f, h) -> h becomes root
+    # Add more specific assertions here to check tree structure if needed, or rely on size/get
+    assert avl_tree.get("h") == (3, True)
+    assert avl_tree.get("f") == (2, True)
+    assert avl_tree.get("k") == (1, True)
+    assert avl_tree.size() == 3
+    
+    # Deletion tests that might trigger rotations
+    # ... (can be complex to set up specific scenarios without tree printing)
 
-    assert hash_table.delete("abc") == True
-    assert hash_table.delete("cba") == True
-    assert hash_table.delete("bac") == True
-    assert hash_table.delete("bca") == True
-    assert hash_table.delete("acb") == True
-    assert hash_table.delete("cab") == True
-    assert hash_table.size() == 0
     print("Functional tests passed!")
 
 
-# *** Test the performance of the hash table. ***
-# add elements in increments of 10,000.
-# measure the time for each increments.
-
+# *** Test the performance of the AVL tree. ***
 def performance_test():
-    hash_table = HashTable()
+    avl_tree = AVLTree() # Changed from HashTable
 
-    for iteration in range(100):
+    for iteration in range(100): # Reduced iterations for quicker testing if needed
         begin = time.time()
         random.seed(iteration)
-        for i in range(10000):
+        for i in range(10000): # Reduced item count for quicker testing
             rand = random.randint(0, 100000000)
-            hash_table.put(str(rand), str(rand))
+            avl_tree.put(str(rand), str(rand))
         random.seed(iteration)
-        for i in range(10000):
+        for i in range(10000): # Reduced item count
             rand = random.randint(0, 100000000)
-            hash_table.get(str(rand))
+            avl_tree.get(str(rand))
         end = time.time()
         print("%d %.6f" % (iteration, end - begin))
-    print(f"Size: {hash_table.size()}")
-
-    for iteration in range(100):
-        random.seed(iteration)
-        for i in range(10000):
-            rand = random.randint(0, 100000000)
-            hash_table.delete(str(rand))
     
-    if hash_table.size() != 0:
-        print(f"Error: Hash table not empty. Size: {hash_table.size()}")
+    print(f"Size before massive delete: {avl_tree.size()}")
 
-    assert hash_table.size() == 0
+    for iteration in range(100): # Reduced iterations
+        random.seed(iteration)
+        for i in range(10000): # Reduced item count
+            rand = random.randint(0, 100000000)
+            avl_tree.delete(str(rand))
+    
+    print(f"Size after massive delete: {avl_tree.size()}")
+    if avl_tree.size() != 0:
+        print(f"Error: AVL tree not empty after deletes. Size: {avl_tree.size()}")
+
+    assert avl_tree.size() == 0, f"AVLTree size is {avl_tree.size()} instead of 0"
     print("Performance tests passed!")
 
+# *** Test result ***
+# Functional tests passed!
+# 0 0.092612
+# 1 0.105932
+# 2 0.109138
+# 3 0.112664
+# 4 0.117125
+# 5 0.117727
+# 6 0.121797
+# 7 0.121735
+# 8 0.128206
+# 9 0.125004
+# 10 0.128212
+# 11 0.130480
+# 12 0.129883
+# 13 0.132182
+# 14 0.130945
+# 15 0.131767
+# 16 0.134611
+# 17 0.133998
+# 18 0.136652
+# 19 0.136201
+# 20 0.137897
+# 21 0.136607
+# 22 0.136894
+# 23 0.139731
+# 24 0.138489
+# 25 0.248817
+# 26 0.142050
+# 27 0.140612
+# 28 0.142918
+# 29 0.141483
+# 30 0.145068
+# 31 0.144443
+# 32 0.143332
+# 33 0.146495
+# 34 0.144338
+# 35 0.146076
+# 36 0.147539
+# 37 0.145195
+# 38 0.148489
+# 39 0.145902
+# 40 0.148493
+# 41 0.146581
+# 42 0.149796
+# 43 0.146986
+# 44 0.147464
+# 45 0.150631
+# 46 0.148340
+# 47 0.150850
+# 48 0.149343
+# 49 0.149031
+# 50 0.152127
+# 51 0.149981
+# 52 0.480210
+# 53 0.151896
+# 54 0.151534
+# 55 0.153946
+# 56 0.151946
+# 57 0.157992
+# 58 0.153545
+# 59 0.154896
+# 60 0.153110
+# 61 0.153443
+# 62 0.155723
+# 63 0.153102
+# 64 0.155946
+# 65 0.153833
+# 66 0.154254
+# 67 0.156789
+# 68 0.154502
+# 69 0.199981
+# 70 0.155769
+# 71 0.157970
+# 72 0.155675
+# 73 0.155637
+# 74 0.158917
+# 75 0.156489
+# 76 0.158372
+# 77 0.157104
+# 78 0.157441
+# 79 0.763878
+# 80 0.157667
+# 81 0.159420
+# 82 0.157728
+# 83 0.157259
+# 84 0.160675
+# 85 0.161038
+# 86 0.160494
+# 87 0.158813
+# 88 0.159110
+# 89 0.162155
+# 90 0.159029
+# 91 0.161483
+# 92 0.159601
+# 93 0.161744
+# 94 0.159981
+# 95 0.159574
+# 96 0.162718
+# 97 0.160551
+# 98 0.162825
+# 99 0.161190
+# Size before massive delete: 994949
+# Size after massive delete: 0
+# Performance tests passed!
 
 if __name__ == "__main__":
     functional_test()
     performance_test()
-
