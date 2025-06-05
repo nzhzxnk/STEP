@@ -18,6 +18,7 @@ def create_ang_dict():
 
 def create_counter_dict(ang_dict):
     counter_dict = {}
+    #sortした文字を利用することで辞書を作る際にかかる計算量をnにしている
     for sort_word in ang_dict:
         each_dict={}
         # 空文字の場合

@@ -1,5 +1,7 @@
+#計算量：
+# 
 # counter関数を使わずに実装した例
-# ang_dictを元に、score_dict(sort_wordとword_score),counter_dict(sort_word,word_counter)を作成
+# ang_dictを元に、score_dict(sort_wordとword_score),counter_dict(sort_word,word_counter)を作成:
 # dictがソート済みであることを利用し,forで各要素の種類と数を計上しcounter_dictを作成
 # 入力(string)を受け取りソートして、string_counterを作成
 # string_counterとword_counterの差分がFalseかつword_scoreが最大のものを出力
@@ -14,7 +16,7 @@ import requests
 # 本体となるfind_max_anagram関数
 def find_max_anagram(string,ang_dict,counter_dict,score_dict):
     string = string.strip()
-    # 入力(string)を受け取りソートして、string_counterを作成
+    # 入力(string)を受け取りソートして、string_counte_dictrを作成
     string_counter_dict = string_counter(string)
     # substring_checkがTrue(部分文字列から作成可能)かつword_scoreが最大となるsort_wordを出力
     max_score = -1
