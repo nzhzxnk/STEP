@@ -2,19 +2,18 @@
 # 25/06/05 21:20 edit comment now
 
 # *** Summary ***
-# hash function: sum just ASCII code -> add by incrementary shifting place value and sum up. (ver.2)
-# bucket_size: always fixed -> Adjust bucket size to fit item count.
+# hash function: add by incrementary shifting place value and sum up. 
+# bucket_size: Adjust bucket size to fit item count.
 # 1) Use prime number.
 # 2) Expand to twice if used bucket size >= 70%.
 # 3) Shrink to half if used bucket size <= 30%.
+# Node: Doubly linked list.
 
 # *** Plan ***
 # Design a cache that achieves the following operations with mostly O(1)
 # Implement a data structure that stores the most recently accessed N pages.
 # 1) When a pair of <URL, Web page> is given, find if the given pair is contained in the cache or not
 # 2) If the pair is not found, insert the pair into the cache after evicting the least recently accessed pair
-# Use HashTable_3 method
-# Use 
 
 import sys,random,time
 
@@ -224,6 +223,13 @@ class HashTable:
         return True
 # *** HashTable_3 (finish) ***
 
+# *** An item object ***
+# represents one key - value pair in the hash table.
+    # |url|: The url of the item. 
+    # |contents|: The content of the item. The value must be string??
+    # |prev|: The previous item in the doubly linked list. 
+    # |next|: The next item in the doubly linked list. If this is the last item in the
+    #         linked list, |next| is None.
 class Node:
     def __init__(self, url, contents):
         self.url = url
@@ -232,26 +238,25 @@ class Node:
         self.next = None
 
 class Cache:
-    # Initialize the cache.
+    # *** Initialize the cache. ***
     # |n|: The size of the cache.
+    # |current_size|: the size of item 
+    # hash_table is class HashTable() 
+    # |head|: most recentry acsessed page.
+    # |tail|: oldest page.
     def __init__(self, n):
-        # キャッシュの最大サイズ
         self.capacity = n
-        # 現在のキャッシュ内のアイテム数
         self.current_size = 0
-        # URLから対応するNodeへのマッピング（O(1)検索のため）
         self.hash_table = HashTable()
-        # 二重連結リストのヘッド（最も最近アクセスされたページ）
         self.head = None
-        # 二重連結リストのテール（最も古いページ）
         self.tail = None
-    # ヘルパー関数: ノードをリストの先頭に移動する
+    # *** change the order of cache ***
+    # |node|: most recentry acessed one.
     def _move_to_front(self, node):
+        # 1) node exist at head already.
         if node == self.head:
-            # 既に先頭にある場合は何もしない
             return
-
-        # リストからノードを削除
+        # 2) node exist in list. -> delete and add to head
         if node.prev:
             node.prev.next = node.next
         if node.next:
