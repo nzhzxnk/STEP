@@ -48,4 +48,4 @@ def miller_rabin(n,k=5):
                 return False
         return True
 
-print(find_prime(14285))
+print(find_prime(200))

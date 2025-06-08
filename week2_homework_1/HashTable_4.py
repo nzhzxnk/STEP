@@ -1,7 +1,7 @@
 # This file is 4th ver. 
 
 #  *** Progress ***
-# edit comment now.
+# 25/06/05 21:20 edit comment now
 
 # *** what is the changes? ***
 # hash table -> AVL tree
