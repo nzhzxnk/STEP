@@ -210,7 +210,7 @@ def evaluate(tokens):
                 
             index += 1 # Until find corresponding closing, continue prioritized_evaluate.
     
-    while len(tokens) > 1: # Ultimately the tokens list should contain only a single 'NUMBER' token.
+    while len(tokens) > 1 and index < len(tokens): # Ultimately the tokens list should contain only a single 'NUMBER' token.
         # print(f"tokens={tokens}") # Debag
         if tokens[index]['type'] == 'OPENING' and tokens[index]['layer'] == now_layer: # If find the first opening parenthesis with highest layer, repeat Step2-4. 
             is_prioritized_evaluating = True # Start prioritized_evaluate from now_opening_index.

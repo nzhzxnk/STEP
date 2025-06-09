@@ -136,7 +136,6 @@ def evaluate(tokens):
         print('Invalid syntax')
         exit(1)
 
-
 # *** Test ***
 def test(line):
     line = re.sub(r'\s+', '', line)

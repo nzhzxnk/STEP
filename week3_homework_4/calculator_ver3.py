@@ -239,7 +239,6 @@ def evaluate(tokens):
             else:
                 last_is_number = False
             index += 1 # Until find corresponding closing, continue prioritized_evaluate.
-    
     # *** Option evaluate ***
     def abs_evaluate(tokens,now_opening_index):
         tokens[now_opening_index]['number'] = abs(tokens[now_opening_index]['number'])
@@ -257,7 +256,8 @@ def evaluate(tokens):
         tokens = [token for token in tokens if token]
         return tokens
     
-    while len(tokens) > 1: # Ultimately the tokens list should contain only a single 'NUMBER' token.
+    # *** main code of evaluate function ***
+    while len(tokens) > 1 and index < len(tokens): # Ultimately the tokens list should contain only a single 'NUMBER' token.
         # print(f"t={tokens}, p= {is_prioritized_evaluating},s = {is_standard_evaluating}, i = {index} ") # Debag
         if tokens[index]['type'] == 'OPENING' and tokens[index]['layer'] == now_layer: # If find the first opening parenthesis with highest layer, repeat Step2-4. 
             is_prioritized_evaluating = True # Start prioritized_evaluate from now_opening_index.
@@ -425,7 +425,7 @@ def run_test():
     # test("3+1//2")  # Expected to display 'Invalid syntax'
     # test("3+1**2")  # Expected to display 'Invalid syntax'
     # print("==== Test finished! ====\n")
-# run_test()
+run_test()
 
 # *** Main code of this program ***
 while True:
