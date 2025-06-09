@@ -9,6 +9,7 @@
 # /index/: After read, return the next index.
 # Note: make the rule of the line. (= isn't need etc..)
 
+import re
 # Note: parentheses_count is global variable. Difine here.
 parentheses_count = 0
 
@@ -145,7 +146,7 @@ def evaluate(tokens):
                     tokens[index] = {} 
                     tokens[index + 1] = {'type':'NUMBER', 'number':multi_ans} # Results overwrite the last token. 
                 else: # If an unexpected symbol exists in the line, the program is crashed and show errorcode(1). 
-                    print('Invalid syntax')
+                    print('Invalid syntax around ASTERISK')
                     exit(1)
             elif tokens[index]['type'] == 'SLASH': # If '/' exsists in the line, evaluate and put the result in tokens[index+1].
                 if tokens[index - 1]['type'] == 'NUMBER' and tokens[index + 1]['type'] == 'NUMBER':
@@ -154,13 +155,19 @@ def evaluate(tokens):
                     tokens[index] = {}
                     tokens[index + 1] = {'type':'NUMBER', 'number':div_ans}
                 else:
-                    print('Invalid syntax')
+                    print('Invalid syntax around SLASH')
                     exit(1)
             # If corresponding closing exsists in the line, finish prioritized_evaluate and prepare for next standard_evaluate.
             elif tokens[index]['type'] == 'CLOSING' and tokens[index]['layer'] == now_layer:  
-                tokens[now_opening_index] = {'type':'NUMBER', 'number':0} # In standard_evaluate, the result will overwrite tokens[now_opening_index].
-                tokens.insert(now_opening_index+1, {'type': 'PLUS'}) # Insert a dummy '+' token.
                 tokens = [token for token in tokens if token] # Delete empty dicts.
+                tokens[now_opening_index] = {'type':'NUMBER', 'number':0} # In standard_evaluate, the result will overwrite tokens[now_opening_index].
+                if tokens[now_opening_index+1]['type'] == 'NUMBER':
+                    tokens.insert(now_opening_index+1, {'type': 'PLUS'}) # Insert a dummy '+' token.
+                elif tokens[now_opening_index+1]['type'] == 'MINUS':
+                    pass
+                else:
+                    print('Invalid syntax around OPENING')
+                    exit(1)
                 return tokens
             index += 1 # Until find corresponding closing, continue prioritized_evaluate.
     
@@ -175,8 +182,10 @@ def evaluate(tokens):
     # |now_layer|: the highest layer at this point.
     # /tokens/: Return a list of all tokens. The content is modified through calculation.
     def standard_evaluate(tokens,index,now_opening_index,now_layer):
+        last_is_number = False
         while True:
             if tokens[index]['type'] == 'NUMBER':
+                last_is_number = True
                 if tokens[index - 1]['type'] == 'PLUS': # If the previous operator is '+', tokens[index]['number'] add result.
                     tokens[now_opening_index]['number'] += tokens[index]['number']
                     tokens[index-1] = {}
@@ -186,12 +195,19 @@ def evaluate(tokens):
                     tokens[index-1] = {}
                     tokens[index] = {}
                 else: # If an unexpected symbol exists in the line, the program is crashed and show errorcode(1). 
-                    print('Invalid syntax')
+                    print('Invalid syntax around NUMBER')
                     exit(1)
             elif tokens[index]['type'] == 'CLOSING' and tokens[index]['layer'] == now_layer:
                 tokens[index] = {} # Closing parenthesis replace with empty dict.
                 tokens = [token for token in tokens if token] # Delete empty dicts.
-                return tokens
+                if last_is_number:
+                    return tokens
+                else:
+                    print('Invalid syntax around CLOSING')
+                    exit(1)
+            else:
+                last_is_number = False
+                
             index += 1 # Until find corresponding closing, continue prioritized_evaluate.
     
     while len(tokens) > 1: # Ultimately the tokens list should contain only a single 'NUMBER' token.
@@ -216,11 +232,12 @@ def evaluate(tokens):
             # print(any(token['type'] == 'CLOSING' for token in tokens)) # Debag
             if any(token['type'] == 'CLOSING' for token in tokens):
                 now_layer = max([token['layer'] for token in tokens if token['type'] == 'CLOSING']) # Update the highest layer at this point. 
-            print(f"now_layer={now_layer}") # Debag
+            # print(f"now_layer={now_layer}") # Debag
     return tokens[0]['number'] 
 
 # *** Test ***
 def test(line):
+    line = re.sub(r'\s+', '', line) # Remove space
     tokens = tokenize(line)
     # print(f"tokens={tokens}") # Debag
     actual_answer = evaluate(tokens)
@@ -235,21 +252,102 @@ def test(line):
 # Note: Add more tests to this function :)
 def run_test():
     print("==== Test started! ====")
+    # *** Basic ***
     test("1+2")
-    test("1.0+2.1-3")
-    test("1.2*1.4+4.6-7.33/8*9.4")
-    test("1.2*(1.4+4.6)-7.33/8*9.4")
-    test("1.2*1.4+4.6-7.33/(8*9.4)")
-    test("(1.2*((1.4+4.6)*5.5+2.77)-7.33)/(8*9.4)")
+    test("1.11+2")
+    test("1.1+2.2222")
+    test("3-4")
+    test("5.55-4")
+    test("3-4.44")
+    test("3.3-4.4444")
+    test("3.3333-4.4")
+    test("3.3-3.3000")
+    test("2*3")
+    test("2.22*3")
+    test("2.2*3.3333")
+    test("4*0")
+    test("4/5")
+    test("4.44/5")
+    test("4/5.55")
+    test("4.4/5.5555")
+    test("4.4444/5.5")
+    test("4/1")
+    # *** Negative number ***
+    test("(-1)+2")
+    test("-1+2")
+    test("2+(-1)")
+    test("2-1")
+    test("3-(-4.44)")
+    test("(-4.44)-3")
+    test("-4.44-3")
+    test("2*(-3)")
+    test("(-2)*3")
+    test("-2*3")
+    test("(-2)*(-3)")
+    test("(-2.222)*3")
+    test("4/(-5)")
+    test("(-4)/5")
+    test("-4/5")
+    test("(-4)/(-5)")
+    test("4/(-5.5555)")
+    # *** Basic include parentheses ***
+    test("1+2-3")
+    test("(1+2)-3")
+    test("1+(2-3)")
+    test("1.1+2-3.333")
+    test("(1.1+2)-3.333")
+    test("1.1+(2-3.333)")
+    test("4/2*3")
+    test("(4/2)*3")
+    test("4/(2*3)")
+    test("4/2.22*3.333")
+    test("(4/2.22)*3.333")
+    test("4/(2.22*3.333)")
+    # *** Advanced ***
+    test("10000+1000-100+10-1+0.1-0.01+0.001-0.0001")
+    test("-10000+1000-(-100)+10-1+(-0.1)-0.01+0.001-(-0.0001)")
+    test("9*8.7/6.54*3.2/2")
+    test("9*(-8.7/6.54)*(-3.2)/2")
+    test("-21/11+10-1.2*1.23+1.234-1.2345/1.23456+1.234567*1.2345678-1.23456789")
+    test("-21/((11+10)*(1.2-1.23/(1.234*(1.2345-1.23456)+1.234567)*1.2345678)-1.23456789)")
+    # *** Invaild input (OK) ***
+    test("1 + 2　")
+    test("1")
+    test("-2")
+    test("(-3)")
+    test("(-(-4))")
+    # # *** Invaild input (NG) ***
+    # test("001")
+    # test("1+1あ”％？1*1-1")  # Expected to display 'Invalid character found: '
+    # test("1+a")  # Expected to display 'Invalid character found: '
+    # test("1.2.3456+7")  # Expected to display 'Invalid character found: '
+    # test("(1+2)+3)") # Expected to display 'Parentheses mismatch error: Unbalanced parentheses: '
+    # test("((1+2)+3") # Expected to display 'Parentheses mismatch error: Unbalanced parentheses: '
+    # test("(1+()2)+3") # Expected to display 'Invalid syntax'
+    # test("1+2=") # Expected to display 'Invalid character found: '
+    # test('*') # Expected to display 'Invalid syntax'
+    # test("1+") # Expected to display 'Invalid syntax'
+    # test("+1") # Expected to display 'Invalid syntax'
+    # test("1-") # Expected to display 'Invalid syntax'
+    # test("*2") # Expected to display 'Invalid syntax'
+    # test("2*") # Expected to display 'Invalid syntax'
+    # test("/2") # Expected to display 'Invalid syntax'
+    # test("2/") # Expected to display 'Invalid syntax'
+    # test("1/0") # Expected to display 'Invalid syntax'
+    # test("3+1+-2")  # Expected to display 'Invalid syntax'
+    # test("3+1-*2")  # Expected to display 'Invalid syntax'
+    # # *** Undifined (NG) ***___
+    # test("3+1//2")  # Expected to display 'Invalid syntax'
+    # test("3+1**2")  # Expected to display 'Invalid syntax'
     print("==== Test finished! ====\n")
 
 run_test()
 
 # *** Main code of this program ***
-# while True:a
-#     print('> ', end="")
-#     line = input()
-#     tokens = tokenize(line)
-#     answer = evaluate(tokens)
-#     # Note: print("answer = %f\n" % answer) == print(f"answer = {answer}\n")
-#     print("answer = %f\n" % answer)
+while True:
+    print('>', end="")
+    line = re.sub(r'\s+', '', input()) # Remove space
+    tokens = tokenize(line)
+    answer = evaluate(tokens)
+    # Note: print("answer = %f\n" % answer) == print(f"answer = {answer}\n")
+    print("answer = %f\n" % answer)
