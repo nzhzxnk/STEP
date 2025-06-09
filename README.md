@@ -17,7 +17,7 @@ STEP/
 ├── week3_homework_4/
 │
 
-graph BT %% Bottom-Top (上下を逆にする)
+graph BT
 
 ```mermaid
     A(STEP/)
