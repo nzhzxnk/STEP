@@ -1,4 +1,32 @@
-### Week2 Homewook1の検討
+### Week2
+
+'''mermaid
+    subgraph Week 2 Homework 3 and 4
+        W2H34[week2_homework_3and4/]
+        W2H34 --> W2H34C[cache.py]
+    end
+
+    subgraph Week 2 Homework 2
+        W2H2[week2_homework_2/]
+        W2H2 --> W2H2T[tree_vs_hashtable.md]
+    end
+
+    subgraph Week 2 Homework 1
+        W2H1[week2_homework_1/]
+        W2H1 --> W2H1_1[hashTable_1.py]
+        W2H1 --> W2H1_2[hashTable_2.py]
+        W2H1 --> W2H1_3[hashTable_3.py]
+        W2H1 --> W2H1_4[hashTable_4.py]
+        W2H1 --> W2H1_C[hashTable_comparison.py]
+        W2H1 --> W2H1_CP[hashTable_comparison.png]
+        W2H1 --> W2H1_MR[miller_rabin.py]
+    end
+
+    subgraph Week 2 Class
+        W2C[week2_class/]
+        W2C --> W2CH[week2_homework_summary.md]
+        W2C --> W2CR[week2_review.md]
+    end
 
 ## HashTable 各バージョンの概要と目的
 

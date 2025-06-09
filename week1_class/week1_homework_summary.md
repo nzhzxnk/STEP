@@ -1,5 +1,30 @@
-# Week1_Anagram
+# Week1
 
+```mermaid
+graph LR
+
+    subgraph Week 1 Homework 1
+        W1H1[week1_homework_1/]
+        W1H1 --> W1A1[week1_anagram1_1/]
+        W1A1 --> W1A1D[dictionary.py]
+        W1A1 --> W1A1M[main.py]
+        W1A1 --> W1A1T[test.py]
+        W1H1 --> W1A2[week1_anagram1_2/]
+        W1A2 --> W1A2D[dictionary.py]
+        W1A2 --> W1A2M[main.py]
+        W1A2 --> W1A2S[search.py]
+        W1A2 --> W1A2T[test.py]
+        W1H1 --> W1A3[week1_anagram2_1/]
+        W1A3 --> W1A3D[dictionary.py]
+        W1A3 --> W1A3M[main.py]
+        W1A3 --> W1A3T[test.py]
+    end
+
+    subgraph Week 1 Class
+        W1C[week1_class/]
+        W1C --> W1CH[week1_homework_summary.md]
+        W1C --> W1CR[week1_review.md]
+    end
 
 ## 各フォルダの説明
 

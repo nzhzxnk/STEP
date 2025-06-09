@@ -1,3 +1,0 @@
-# ang_dictを元に、score_dict(sort_wordとword_score),counter_dict(sort_word,word_counter)を作成
-# 入力(string)を受け取り、string_counterを作成
-# string_counterとword_counterの差分がFalseかつword_scoreが最大のものを出力
