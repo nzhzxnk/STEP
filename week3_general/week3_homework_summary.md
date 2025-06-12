@@ -1,6 +1,6 @@
-## Week3 Homework　Summary
+# Week3 Homework　Summary
 
-### week3　各レポジトリの構成
+## week3　各レポジトリの構成
 
 ```mermaid
 graph BT
@@ -27,9 +27,11 @@ graph BT
     end
 ```
 
-### 各レポジトリの説明
+## 各レポジトリの説明
+
 ---
-#### week3_homework_1and2
+### week3_homework_1and2
+
 
 1.**目標**
 * Homework 1: 掛け算と割り算の機能を追加する。（デバックの原則、モジュール化の原則を意識しながら）
@@ -106,8 +108,9 @@ graph BT
 3. **備考（質問したいこと、改善案など）**
 * 失敗するテストケースを自動でテストするようにコードを書き換えたかったが方法が分からなかった。
 * 他にdequeを使う方法を思いついたので、全てまとめてcalculator_4.pyで実装する。
+
 ---
-#### week_homework_3
+### week_homework_3
 
 1.**目標**
 * Homework 3: ()を含む式に対応する。
@@ -209,7 +212,7 @@ graph BT
 * 十分なテストケースが考えられているか少し不安である。自分では思いつく限り作った。
 
 ---
-#### week_homework_4 
+### week_homework_4 
 
 1.**目標**
 * Homework 4:abs(),int(),round()を含む式に対応する。
