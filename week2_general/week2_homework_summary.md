@@ -1,6 +1,7 @@
 ### Week2
 
-'''mermaid
+```mermaid
+graph BT
     subgraph Week 2 Homework 3 and 4
         W2H34[week2_homework_3and4/]
         W2H34 --> W2H34C[cache.py]
@@ -27,6 +28,7 @@
         W2C --> W2CH[week2_homework_summary.md]
         W2C --> W2CR[week2_review.md]
     end
+```
 
 ## HashTable 各バージョンの概要と目的
 
