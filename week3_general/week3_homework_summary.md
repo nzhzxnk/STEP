@@ -38,7 +38,7 @@ graph BT
 * Homework 2: 網羅的なテストケースを追加する。
 
 2.**提出ファイルの説明**
-* [calculator_1.py](https://raw.githubusercontent.com/nzhzxnk/STEP/refs/heads/main/week3_homework_1and2/calculator_1.py)
+* [calculator_1.py](https://github.com/nzhzxnk/STEP/blob/main/week3_homework_1and2/calculator_1.py)
 * サンプルコードに対して以下の変更・追加を行った.
   
     1. 掛け算と割り算への対応
@@ -116,7 +116,7 @@ graph BT
 * Homework 3: ()を含む式に対応する。
 
 2.**提出ファイルの説明**
-* [calculator_2.py](https://raw.githubusercontent.com/nzhzxnk/STEP/refs/heads/main/week3_homework_3/calculator_2.py)
+* [calculator_2.py](https://github.com/nzhzxnk/STEP/blob/main/week3_homework_3/calculator_2.py)
 * 各関数やその他の変更点について記述する。
   
     1. read関数
@@ -218,7 +218,7 @@ graph BT
 * Homework 4:abs(),int(),round()を含む式に対応する。
   
 2.**提出ファイルの説明**
-* [calculator_3.py](https://raw.githubusercontent.com/nzhzxnk/STEP/refs/heads/main/week3_homework_4/calculator_3.py)
+* [calculator_3.py](https://github.com/nzhzxnk/STEP/blob/main/week3_homework_4/calculator_3.py)
 * 各関数やその他の変更点について記述する。
   
     1. read関数
