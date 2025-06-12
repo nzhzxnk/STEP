@@ -17,6 +17,7 @@
 * スコアの計算で文字コードを使う
 * C++はbinaryコードなので早い　mikiさん
 * C++モジュール？
+* anagram2はa=2,b=3,c=5という感じで素数で定義して割り切れたら作れるねってする！！かしこすぎる！！
 
 
 ## [Case1 (Anagram2)](https://github.com/Rei-0a/STEP/blob/main/01_Anagram/Anagram_02.py)
