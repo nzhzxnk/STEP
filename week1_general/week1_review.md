@@ -2,6 +2,7 @@
 * nlogn, lognはm文字に対してなのでm*...である必要がある！
 * mはせいぜい小さいということでスライドなどでは簡単な式になっていた。
 * [Lisaさんスライド](https://docs.google.com/presentation/d/1Es2mCnJ96kmXD0l1hVTFM-dMXnKdmYvbJkJUz-S_4DY/edit?slide=id.g35f167706f1_0_251#slide=id.g35f167706f1_0_251)
+* 今回のmはかなり小さいのでmlogmは無視できるけど、m!とかになるとm=10でもかなり大きくなるので注意
 * 関数やファイルは、意味や責任範囲が同じものを括る。モジュール化！
 * テストケースとかででてきたself.(def_name) selfをなぜ明示するのかわからない
   糖衣構文、関数の勉強する
