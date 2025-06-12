@@ -1,5 +1,5 @@
-# *** Homework3 ***
-# Handle parentheses in mathmatical expressions.
+# *** Homework4 ***
+# Handle abs(), int(), and round() operations.
 
 # *** Read series ***
 # Read the line from left to right. Separate into numbers and individual symbols('+','-','*','/','(',')').
@@ -63,6 +63,31 @@ def read_closing(line, index):
     parentheses_count -= 1
     return token, index + 1
 
+def read_abs(line, index):
+    if line[index:index+4] == 'abs(':
+        token = {'type': 'ABS'}
+    else:
+        # If an unexpected symbol exists in the line, the program will crash and display error code(1). 
+        print('Invalid character found: ' + line[index:index+4])
+        exit(1)
+    return token, index+3
+
+def read_int(line, index):
+    if line[index:index+4] == 'int(':
+        token = {'type': 'INT'}
+    else:
+        print('Invalid character found: ' + line[index:index+4])
+        exit(1)
+    return token, index+3
+
+def read_round(line, index):
+    if line[index:index+6] == 'round(':
+        token = {'type': 'ROUND'}
+    else:
+        print('Invalid character found: ' + line[index:index+4])
+        exit(1)
+    return token, index+5
+
 #  *** Tokenize ***
 # Separate numbers and individual symbols from the line (Read series). Compile all tokens into a list in original order.
 # |line|: User inputs a mathmatical expression. 
@@ -90,6 +115,12 @@ def tokenize(line):
             (token, index) = read_opening(line, index)
         elif line[index] == ')':
             (token, index) = read_closing(line, index)
+        elif line[index] == 'a':
+            (token, index) = read_abs(line, index)
+        elif line[index] == 'i':
+            (token, index) = read_int(line, index)
+        elif line[index] == 'r':
+            (token, index) = read_round(line, index)
         else:
             # If an unexpected symbol exists in the line, the program will crash and display error code(1). 
             print('Invalid character found: ' + line[index])
@@ -97,7 +128,7 @@ def tokenize(line):
         tokens.append(token)
     # If there is a mismatch between the number of opening and closing parentheses, the program will crash and display error code(1). 
     if parentheses_count != 0:
-        print('Parentheses mismatch error: Unbalanced parentheses: ' + line[index])
+        print('Parentheses mismatch error: Unbalanced parentheses' )
         exit(1)
     tokens.insert(0, {'type': 'OPENING','layer':0}) # Insert a dummy '(' token.
     tokens.append({'type':'CLOSING', 'layer':0}) # Insert a dummy ')' token.
@@ -207,9 +238,25 @@ def evaluate(tokens):
                     exit(1)
             else:
                 last_is_number = False
-                
             index += 1 # Until find corresponding closing, continue prioritized_evaluate.
+    # *** Option evaluate ***
+    def abs_evaluate(tokens,now_opening_index):
+        tokens[now_opening_index]['number'] = abs(tokens[now_opening_index]['number'])
+        tokens[now_opening_index-1] = {}
+        tokens = [token for token in tokens if token] # Delete empty dicts.
+        return tokens
+    def int_evaluate(tokens,now_opening_index):
+        tokens[now_opening_index]['number'] = int(tokens[now_opening_index]['number'])
+        tokens[now_opening_index-1] = {}
+        tokens = [token for token in tokens if token]
+        return tokens
+    def round_evaluate(tokens,now_opening_index):
+        tokens[now_opening_index]['number'] = round(tokens[now_opening_index]['number'])
+        tokens[now_opening_index-1] = {}
+        tokens = [token for token in tokens if token]
+        return tokens
     
+    # *** main code of evaluate function ***
     while len(tokens) > 1 and index < len(tokens): # Ultimately the tokens list should contain only a single 'NUMBER' token.
         # print(f"t={tokens}, p= {is_prioritized_evaluating},s = {is_standard_evaluating}, i = {index} ") # Debag
         if tokens[index]['type'] == 'OPENING' and tokens[index]['layer'] == now_layer: # If find the first opening parenthesis with highest layer, repeat Step2-4. 
@@ -226,6 +273,15 @@ def evaluate(tokens):
             # print(f"tokens={tokens}") # Debag
         if is_standard_evaluating:
             tokens = standard_evaluate(tokens,index,now_opening_index,now_layer)
+            if tokens[now_opening_index-1]['type'] == 'ABS':
+                tokens = abs_evaluate(tokens,now_opening_index)
+                # print(tokens) # Debag
+            if tokens[now_opening_index-1]['type'] == 'INT':
+                tokens = int_evaluate(tokens,now_opening_index)
+                # print(tokens) # Debag
+            if tokens[now_opening_index-1]['type'] == 'ROUND':
+                tokens = round_evaluate(tokens,now_opening_index)
+                # print(tokens) # Debag
             index = 0 # Start searching for the next parenthesis.
             is_standard_evaluating = False # Finish standard_evaluate.
             # print(f"tokens={tokens}") # Debag
@@ -233,13 +289,13 @@ def evaluate(tokens):
             if any(token['type'] == 'CLOSING' for token in tokens):
                 now_layer = max([token['layer'] for token in tokens if token['type'] == 'CLOSING']) # Update the highest layer at this point. 
             # print(f"now_layer={now_layer}") # Debag
-    return tokens[0]['number'] 
+    return tokens[0]['number']         
 
 # *** Test ***
 def test(line):
-    line = re.sub(r'\s+', '', line) # Remove space
+    line = re.sub(r'\s+', '', line) # Remove space.
     tokens = tokenize(line)
-    # print(f"tokens={tokens}") # Debag
+    # print(tokens) # Debag
     actual_answer = evaluate(tokens)
     # eval(): Interpret line as python-code, and evaluate this.
     expected_answer = eval(line)
@@ -272,6 +328,18 @@ def run_test():
     test("4.4/5.5555")
     test("4.4444/5.5")
     test("4/1")
+    test("abs(-12.33)")
+    test("-abs(12.33)")
+    test("abs(3-4)")
+    test("abs(3.4*(-4.3))")
+    test("int(12.5000)")
+    test("-int(12.4999)")
+    test("int(2-3)")
+    test("int(2.3/3.4)")
+    test("round(12.5000)")
+    test("-round(12.4999)")
+    test("round(1+2)")
+    test("round(1.2345*2)")
     # *** Negative number ***
     test("(-1)+2")
     test("-1+2")
@@ -290,6 +358,13 @@ def run_test():
     test("-4/5")
     test("(-4)/(-5)")
     test("4/(-5.5555)")
+    test("round(-4.64)-3")
+    test("round(-4.64-3)")
+    test("abs(-4.44-3)")
+    test("3*abs(-2.222)")
+    test("abs(-2.222*3)")
+    test("int(-4/5.5555)")
+    test("4/int(-5.5555)")
     # *** Basic include parentheses ***
     test("1+2-3")
     test("(1+2)-3")
@@ -304,19 +379,22 @@ def run_test():
     test("(4/2.22)*3.333")
     test("4/(2.22*3.333)")
     # *** Advanced ***
+    test("12+abs(int(round(-1.55)+abs(int(-2.3+4))))")
     test("10000+1000-100+10-1+0.1-0.01+0.001-0.0001")
     test("-10000+1000-(-100)+10-1+(-0.1)-0.01+0.001-(-0.0001)")
+    test("-10000+abs(1000-(-100)+10-1+(-0.1)-round(0.01))+0.001-int(-0.0001)")
     test("9*8.7/6.54*3.2/2")
     test("9*(-8.7/6.54)*(-3.2)/2")
+    test("round(9*abs(-8.7/6.54)*int(-3.2)/2)")
     test("-21/11+10-1.2*1.23+1.234-1.2345/1.23456+1.234567*1.2345678-1.23456789")
-    test("-21/((11+10)*(1.2-1.23/(1.234*(1.2345-1.23456)+1.234567)*1.2345678)-1.23456789)")
+    test("-21/(abs(-11-10)*(1.2-1.23/round(1.234*int(1.2345-1.23456)+1.234567)*1.2345678)-1.23456789)")
     # *** Invaild input (OK) ***
     test("1 + 2　")
     test("1")
     test("-2")
     test("(-3)")
     test("(-(-4))")
-    # # *** Invaild input (NG) ***
+    # # *** Invailed input (NG) ***
     # test("001")
     # test("1+1あ”％？1*1-1")  # Expected to display 'Invalid character found: '
     # test("1+a")  # Expected to display 'Invalid character found: '
@@ -324,6 +402,13 @@ def run_test():
     # test("(1+2)+3)") # Expected to display 'Parentheses mismatch error: Unbalanced parentheses: '
     # test("((1+2)+3") # Expected to display 'Parentheses mismatch error: Unbalanced parentheses: '
     # test("(1+()2)+3") # Expected to display 'Invalid syntax'
+    # test("1+abs")  # Expected to display 'Invalid character found: '
+    # test("abbs(-11)") # Expected to display 'Parentheses mismatch error: Unbalanced parentheses: '
+    # test("ronud(3.5)") # Expected to display 'Parentheses mismatch error: Unbalanced parentheses: '
+    # test("lnt(4.33)") # Expected to display 'Invalid syntax'
+    # test("absabsabs(-11)") # Handle this case!!!
+    # test("round+4") # Handle this case!!!
+    # test("-int4.33") # Handle this case!!!
     # test("1+2=") # Expected to display 'Invalid character found: '
     # test('*') # Expected to display 'Invalid syntax'
     # test("1+") # Expected to display 'Invalid syntax'
@@ -336,16 +421,15 @@ def run_test():
     # test("1/0") # Expected to display 'Invalid syntax'
     # test("3+1+-2")  # Expected to display 'Invalid syntax'
     # test("3+1-*2")  # Expected to display 'Invalid syntax'
-    # # *** Undifined (NG) ***___
+    # # *** Undifined (NG) ***
     # test("3+1//2")  # Expected to display 'Invalid syntax'
     # test("3+1**2")  # Expected to display 'Invalid syntax'
-    print("==== Test finished! ====\n")
-
+    # print("==== Test finished! ====\n")
 run_test()
 
 # *** Main code of this program ***
 while True:
-    print('>', end="")
+    print('> ', end="")
     line = re.sub(r'\s+', '', input()) # Remove space
     tokens = tokenize(line)
     answer = evaluate(tokens)

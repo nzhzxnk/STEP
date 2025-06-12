@@ -406,6 +406,7 @@ def run_test():
     # test("abbs(-11)") # Expected to display 'Parentheses mismatch error: Unbalanced parentheses: '
     # test("ronud(3.5)") # Expected to display 'Parentheses mismatch error: Unbalanced parentheses: '
     # test("lnt(4.33)") # Expected to display 'Invalid syntax'
+     # test("Int(4.33)") # Expected to display 'Invalid syntax'
     # test("absabsabs(-11)") # Handle this case!!!
     # test("round+4") # Handle this case!!!
     # test("-int4.33") # Handle this case!!!

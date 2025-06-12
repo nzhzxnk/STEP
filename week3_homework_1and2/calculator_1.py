@@ -103,13 +103,11 @@ def evaluate(tokens):
                 print('Invalid syntax')
                 exit(1)
         index += 1
-    
+    tokens = [token for token in tokens if token] # Delete empty dicts.
     # *** Evaluate other (for '+' and '-') ***
     answer = 0
     index = 0
     last_is_number = False
-    # *** Remake tokens ***
-    tokens = [token for token in tokens if token] # Delete empty dicts.
     if tokens[index]['type'] == 'NUMBER':
         tokens.insert(0, {'type': 'PLUS'}) # Insert a dummy '+' token.
     elif tokens[index]['type'] == 'MINUS':
