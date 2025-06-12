@@ -2,7 +2,7 @@
 
 ### week3　各レポジトリの構成
 
-'''mermaid
+```mermaid
     subgraph Week 3 Homework 4
         W3H4[week3_homework_4/]
         W3H4 --> W3H4C3[calculator_3.py]
@@ -28,10 +28,10 @@
 
 ### 各レポジトリの説明
 #### week3_homework_1and2
-1.目標
+1.**目標**
 * Homework 1: 掛け算と割り算の機能を追加する。（デバックの原則、モジュール化の原則を意識しながら）
 * Homework 2: 網羅的なテストケースを追加する。
-2.提出ファイルの説明
+2.**提出ファイルの説明**
 * [calculator_1.py](https://raw.githubusercontent.com/nzhzxnk/STEP/refs/heads/main/week3_homework_1and2/calculator_1.py)
 * サンプルコードに対して以下の変更・追加を行った.
     1. 掛け算と割り算への対応
@@ -92,14 +92,14 @@
     * 失敗する想定のテストケースも作成し、手動で実行しエラーになることを確認した。
     4. デバックの工夫
     * エラーが出る場所によって、表示するエラーメッセージの詳細を変えたので、エラーメッセージを見てどこでエラーが起こっているかを確認できるようにした。
-3. 備考（質問したいこと、改善案など）
+3. **備考（質問したいこと、改善案など）**
 * 失敗するテストケースを自動でテストするようにコードを書き換えたかったが方法が分からなかった。
 * 他にdequeを使う方法を思いついたので、全てまとめてcalculator_4.pyで実装する。
 
 #### week_homework_3
-1.目標
+1.**目標**
 * Homework 3: ()を含む式に対応する。
-2.提出ファイルの説明
+2.**提出ファイルの説明**
 * [calculator_2.py](https://raw.githubusercontent.com/nzhzxnk/STEP/refs/heads/main/week3_homework_3/calculator_2.py)
 * 各関数やその他の変更点について記述する。
     1. read関数
@@ -163,20 +163,21 @@
             # print(f"now_layer={now_layer}") # Debag
     return tokens[0]['number'] 
     ```
-        1. 最も内側で初めに現れる()内を計算する。
+
+  1. 最も内側で初めに現れる()内を計算する。
         * layerの最大値をnow_layerに保存しておく。
         * now_layerと一致するopeningを探し、そこから計算を始める、
-        2. prioritized_evaluate関数で、掛け算割り算を優先して行う。
+  2. prioritized_evaluate関数で、掛け算割り算を優先して行う。
         * is_prioritized_evaluatingというbool型の変数を用いて、これがTrueの場合に限りprioritized_evaluate関数が実行される。
         * 開始indexはnow_opening_indexに保存しておく。
         * このopeningに対するclosingが現れるまで掛け算割り算を行う。
         * 終了したら、indexを開始indexの次（now_opening_index）に移動し、standard_evaluate関数を実行する準備を整える。最終的に()内は'+'または'-'と数字しかない状態となる。
-        3. standard_evaluate関数で、足し算割り算を行う。
+  3. standard_evaluate関数で、足し算割り算を行う。
         * is_standard_evaluatingというbool型の変数を用いて、これがTrueの場合に限りstandard_evaluate関数が実行される。
         * now_opening_indexにstandard_evaluate関数の結果を格納する。
         * 基本的なロジックはcalculator_1.pyと同じ。計算が済んだindexはすべて空辞書('{}')の置き換えられ、のちの処理で削除される。
         * 終了したら、indexを0に移動する。最終的に着目していた()の計算結果はnow_opening_indexに格納され、全ての符号やカッコ、数字は削除される。
-        4. 以上の操作を繰り返す。
+  4. 以上の操作を繰り返す。
         * now_layerを更新し、index == 0から再度以上の操作を繰り返す。
         * この操作を繰り返すとtokensの中身が数字1つになるはずであり、これが最終的な答えとなる。
     4. テストケースについて
@@ -185,14 +186,14 @@
     5. デバックについて
     * エラーが出る場所によって、表示するエラーメッセージの詳細を変えたので、エラーメッセージを見てどこでエラーが起こっているかを確認できるようにした。例えば`print('Invalid syntax around OPENING') exit(1)`のように表示した。
     * 作成中にevaluate関数内にエラーが発生したので、`# print(f"t={tokens}, p= {is_prioritized_evaluating},s = {is_standard_evaluating}, i = {index} ") `をデバック用のコードとしてwhileループのはじめに配置して順を追って計算過程を追ったところ解決した。
-3. 備考（質問したいこと、改善案など）
+3.**備考（質問したいこと、改善案など）**
 * 失敗するテストケースを自動でテストするようにコードを書き換えたかったが方法が分からなかった。
 * 十分なテストケースが考えられているか少し不安である。自分では思いつく限り作った。
 
 #### week_homework_4 
-1.目標
+1.**目標**
 * Homework 4:abs(),int(),round()を含む式に対応する。
-2.提出ファイルの説明
+2.**提出ファイルの説明**
 * [calculator_3.py](https://raw.githubusercontent.com/nzhzxnk/STEP/refs/heads/main/week3_homework_4/calculator_3.py)
 * 各関数やその他の変更点について記述する。
     1. read関数
@@ -291,7 +292,7 @@
     5. デバックについて
     * エラーが出る場所によって、表示するエラーメッセージの詳細を変えたので、エラーメッセージを見てどこでエラーが起こっているかを確認できるようにした。例えば`print('Invalid syntax around OPENING') exit(1)`のように表示した。
     * 作成中にevaluate関数内にエラーが発生したので、`# print(f"t={tokens}, p= {is_prioritized_evaluating},s = {is_standard_evaluating}, i = {index} ") `をデバック用のコードとしてwhileループのはじめに配置して順を追って計算過程を追ったところ解決した。
-3. 備考（質問したいこと、改善案など）
+3. **備考（質問したいこと、改善案など）**
 * 失敗するテストケースを自動でテストするようにコードを書き換えたかったが方法が分からなかった。
 * 十分なテストケースが考えられているか少し不安である。自分では思いつく限り作った。
 * 他にdequeを使う方法を思いついたので、全てまとめてcalculator_4.pyで実装する予定。(6/12 22:30)
