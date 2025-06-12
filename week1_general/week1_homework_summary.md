@@ -20,11 +20,12 @@ graph LR
         W1A3 --> W1A3T[test.py]
     end
 
-    subgraph Week 1 Class
-        W1C[week1_class/]
+    subgraph Week 1 general
+        W1C[week1_general]
         W1C --> W1CH[week1_homework_summary.md]
         W1C --> W1CR[week1_review.md]
     end
+```
 
 ## 各フォルダの説明
 
