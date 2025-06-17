@@ -1,27 +1,19 @@
 import sys
 import collections
 from collections import deque
+import matplotlib.pyplot as plt
 
 class Wikipedia:
 
     # Initialize the graph of pages.
     def __init__(self, pages_file, links_file):
-
         # A mapping from a page ID (integer) to the page title.
-        # For example, self.titles[1234] returns the title of the page whose
-        # ID is 1234.
         self.titles = {}
-
         # A mapping from a page title to the page ID (integer)
-        # For example, self.titles["abc"] returns the ID of the page whose
-        # tiitle is "abc".
         self.ids = {}
-
         # A set of page links.
-        # For example, self.dst_links[1234] returns an array of page IDs linked
-        # from the page whose ID is 1234.
-        self.dst_links = {}
-        self
+        self.dst_links = {} # src_id -> dst_id
+        self.src_links = {} # dst_id -> src_id
 
         # Read the pages file into self.titles.
         with open(pages_file) as file:
@@ -31,6 +23,7 @@ class Wikipedia:
                 assert not id in self.titles, id
                 self.titles[id] = title
                 self.dst_links[id] = []
+                self.src_links[id] = []
         print("Finished reading %s" % pages_file)
 
         self.ids = {title:id for id,title in self.titles.items()}
@@ -43,11 +36,12 @@ class Wikipedia:
                 assert src in self.titles, src
                 assert dst in self.titles, dst
                 self.dst_links[src].append(dst)
+                self.src_links[dst].append(src)
         print("Finished reading %s" % links_file)
         print()
 
 # Homework #2: Calculate the page ranks and print the most popular pages.
-    def find_most_popular_pages(self):
+    def calculate_pagerank(self):
         old_pagerank = {} # Initialize old_pagerank all 1.0.
         for id in self.titles.keys():
             old_pagerank[id] = 1.0
@@ -78,31 +72,69 @@ class Wikipedia:
                 converging = True
             else:
                 old_pagerank = new_pagerank
-        print("the most important 10 pages are: ")
-        # sort by pagerank in descending order and extract the top 10
-        top10_pagerank_ids = sorted(new_pagerank.items(), key=lambda item:item[1], reverse= True)[:10]
-        for id,value in top10_pagerank_ids:
-            print(self.titles[id]) # change a page id to the page title.
+        return new_pagerank
 
+    def calculate_connection(self):
+        connection = {}
+        for id in self.titles.keys():
+            connection[id] = len(self.src_links[id]) + len(self.dst_links[id])
+        return connection
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("usage: %s pages_file links_file" % sys.argv[0])
         exit(1)
     wikipedia = Wikipedia(sys.argv[1], sys.argv[2])
-    wikipedia.find_most_popular_pages()
+    pagerank = wikipedia.calculate_pagerank()
+    connection = wikipedia.calculate_connection()
 
-# COMMAND
-# python3 /Users/hayashiayano/Desktop/STEP/week4_homework_2/wikipedia_2.py /Users/hayashiayano/Desktop/STEP/week4_homework_2/wikipedia_dataset/pages_large.txt /Users/hayashiayano/Desktop/STEP/week4_homework_2/wikipedia_dataset/links_large.txt
-# RESULT
-# the most important 10 pages are: 
-# 英語
-# 日本
-# VIAF_(識別子)
-# バーチャル国際典拠ファイル
-# アメリカ合衆国
-# ISBN
-# ISNI_(識別子)
-# 国際標準名称識別子
-# 地理座標系
-# SUDOC_(識別子)
+    x_values = [] # the num of connection
+    y_values = [] # pagerank
+    data_count = 0
+
+    for page_id, pr_value in pagerank.items():
+        if page_id in connection:
+            x = connection[page_id]
+            y = pr_value
+            if x < 100000 and y < 1500:
+                data_count += 1
+                x_values.append(x)
+                y_values.append(y)
+
+    plt.figure(figsize=(10, 6)) # graph size
+    plt.scatter(x_values, y_values, alpha=0.7, color='red') 
+    plt.xlabel("Number of Connections")
+    plt.ylabel("PageRank")
+    plt.title("PageRank vs. Number of Connections")
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.savefig("pagerank_vs_connections.png")
+    plt.text(0.95, 0.95, f"Data Count: {data_count}",
+         horizontalalignment='right',
+         verticalalignment='top',
+         transform=plt.gca().transAxes,
+         fontsize=12,
+         bbox=dict(facecolor='white', alpha=0.7, edgecolor='black', boxstyle='round,pad=0.5'))
+
+    # x_values = [] # the num of connection
+    # y_values = [] # pagerank
+    # data_count  = 0
+
+    # for page_id, pr_value in pagerank.items():
+    #     if page_id in connection:
+    #         data_count += 1
+    #         x_values.append(connection[page_id])
+    #         y_values.append(pr_value)
+
+    # plt.figure(figsize=(10, 6)) # graph size
+    # plt.scatter(x_values, y_values, alpha=0.7, color='red') 
+    # plt.xlabel("Number of Connections")
+    # plt.ylabel("PageRank")
+    # plt.title("PageRank vs. Number of Connections")
+    # plt.grid(True, linestyle='--', alpha=0.6)
+    # plt.savefig("pagerank_vs_connections.png")
+    # plt.text(0.95, 0.95, f"Data Count: {data_count}",
+    #      horizontalalignment='right',
+    #      verticalalignment='top',
+    #      transform=plt.gca().transAxes,
+    #      fontsize=12,
+    #      bbox=dict(facecolor='white', alpha=0.7, edgecolor='black', boxstyle='round,pad=0.5'))
