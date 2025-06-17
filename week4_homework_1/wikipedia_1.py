@@ -86,7 +86,7 @@ if __name__ == "__main__":
         exit(1)
     wikipedia = Wikipedia(sys.argv[1], sys.argv[2])
     # Homework #1a
-    paths = wikipedia.find_shortest_path("渋谷", "小野妹子")
+    paths = wikipedia.find_shortest_path("", "ユニクロ")
     if paths:
         for path in paths:
             print(f"the shortest path is: {" -> ".join(path)}")

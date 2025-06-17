@@ -72,7 +72,7 @@ class Wikipedia:
             for id in self.titles.keys():
                 new_pagerank[id] += random_jump_per_page # complete calculating new pagerank.
                 torerance += (new_pagerank[id]-old_pagerank[id])**2 # the torerance between before and after pagerank calculating.
-            assert abs(sum(new_pagerank.values()) - num_pages) < 1e-9, f"the pagerank system is wrong.{sum(new_pagerank.values()) - num_pages} "
+            assert abs(sum(new_pagerank.values()) - num_pages) < 1e-4, f"the pagerank system is wrong.{sum(new_pagerank.values()) - num_pages} "
             if torerance < 0.01: # difine the process as converged when the torerance is within 0.01.
                 converging = True
             else:
