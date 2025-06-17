@@ -64,7 +64,7 @@ class Wikipedia:
         while q:
             is_visiting_id, route_taken = q.popleft()
             # Don't search so far, if the route will be longer than min_route_length.
-            if len(route_taken) > min_route_length: 
+            if len(route_taken) >= min_route_length: 
                 continue
             for dst_id in self.links[is_visiting_id]:
                 if not dst_id in visited:
@@ -79,30 +79,6 @@ class Wikipedia:
                         q.append((dst_id,new_route))
                         visited.add(dst_id) # if NOT goal_id, add dst_id to visited.
         return shortest_routes
-
-        # mistake
-        # while q:
-        #     count += 1
-        #     # print(count) #debag
-        #     is_visiting_id, route_taken = q.popleft()
-        #     visited.add(is_visiting_id) # Add is_visiting_id to visited.
-        #     if not find_goal:
-        #         if is_visiting_id == goal_id: # If reach the goal, return route taken.
-        #             find_goal = True
-        #             path = [self.titles[id] for id in route_taken]
-        #             shortest_path_length = len(path)
-        #             shortest_paths.append(path) # Change from a id to the title. <self.titles>
-        #         else:
-        #             for dst_id in self.links[is_visiting_id]:  # Search for destinations of is_visiting_id.
-        #                 if dst_id in visited: # Check for multiple visits. <visited>
-        #                     continue
-        #                 else: # If the destination was NOT visited, append dst_id,route_taken to queue. 
-        #                     q.append((dst_id,route_taken+[dst_id])) # add dst_id to route_taken 
-        #     else:
-        #         if is_visiting_id == goal_id: # If reach the goal, return route taken.
-        #             if len([self.titles[id] for id in route_taken]) <= shortest_path_length:
-        #                 shortest_paths.append([self.titles[id] for id in route_taken]) # Change from a id to the title. <self.titles>
-        # return shortest_paths
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

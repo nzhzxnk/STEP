@@ -46,10 +46,6 @@ class Wikipedia:
         print()
 
 # Homework #2: Calculate the page ranks and print the most popular pages.
-class PageRankCalculator:
-    def __init__(self,titles,links):
-        self.titles = titles
-        self.links = links
     def find_most_popular_pages(self):
         old_pagerank = {} # Initialize old_pagerank all 1.0.
         for id in self.titles.keys():
@@ -63,7 +59,7 @@ class PageRankCalculator:
                 new_pagerank[id] = 0.0
             # print(new_pagerank) #debag
             random_jump_value = 0.0 # ramdomly distributed pagerank is initialized 0.
-            torerance = 0
+            torerance = 0 
             for src_id,dst_ids in self.links.items():
                 if not dst_ids: # if source has no outgoing links, its 100% pagerank is distributed into random_jump_value.
                     random_jump_value += old_pagerank[src_id]
@@ -76,7 +72,7 @@ class PageRankCalculator:
             for id in self.titles.keys():
                 new_pagerank[id] += random_jump_per_page # complete calculating new pagerank.
                 torerance += (new_pagerank[id]-old_pagerank[id])**2 # the torerance between before and after pagerank calculating.
-            assert abs(sum(new_pagerank.values()) - num_pages) < 1e-4, f"the pagerank system is wrong.{sum(new_pagerank.values()) - num_pages} "
+            assert abs(sum(new_pagerank.values()) - num_pages) < 1e-9, f"the pagerank system is wrong.{sum(new_pagerank.values()) - num_pages} "
             if torerance < 0.01: # difine the process as converged when the torerance is within 0.01.
                 converging = True
             else:
@@ -93,9 +89,7 @@ if __name__ == "__main__":
         print("usage: %s pages_file links_file" % sys.argv[0])
         exit(1)
     wikipedia = Wikipedia(sys.argv[1], sys.argv[2])
-    # Homework #2
-    pagerankcalculator = PageRankCalculator(wikipedia.titles,wikipedia.links)
-    pagerankcalculator.find_most_popular_pages()
+    wikipedia.find_most_popular_pages()
 
 # COMMAND
 # python3 /Users/hayashiayano/Desktop/STEP/week4_homework_2/wikipedia_2.py /Users/hayashiayano/Desktop/STEP/week4_homework_2/wikipedia_dataset/pages_large.txt /Users/hayashiayano/Desktop/STEP/week4_homework_2/wikipedia_dataset/links_large.txt
