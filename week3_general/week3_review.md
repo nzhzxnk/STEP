@@ -4,7 +4,7 @@
 * 大きいプログラム、ライブラりでは死なずにエラー出す方がいい、あまりよくわからなかった
 
 ### 他のウィンドウ？として実行する。
-* 同時に同じファイルを実行するイメージ
+* 同時に同じファイルを実行するイメージ 
 * subprocess.run([ターミナルにつコマンドをここに打つ])を使う
 * stdout: subprocess.PIPE　print commandを変える？？
 * processとは
@@ -17,6 +17,8 @@
 * 他の失敗したときに強制脱出
 * pythonのexit()try
 
+### [再帰降下法](https://github.com/xharaken/step2/blob/master/calculator_ll.py)
+
 ### 文脈自由文法
 * 写真見て
 * +をE *をT
@@ -24,13 +26,13 @@
 * E:=T | E+T | E-T -左再帰> E = TE' 
 * T*=F | T*F | T/F
 * F:=N | (E)
+* 実際に実装してみる
 
-* LL1percer 再帰下降法
+* LL1percer 再帰降下法
 * LRpercer
 * LL3 Java
 * C はなんなのか
 * コンパイラ、インタープリタ
-
 * tree　写真
 
 ### Homework review
@@ -43,4 +45,5 @@
 * 関数ごとのテストかく
 * テスト書くのはめんどくさいが、開発効率が上がる！
 * if文があったら両方のケースをテスト
-* 大きな流れを一番トップレベルにかく　Yuikaさんのevaluate関数のところ、コメントは短くの方がいい？
+* 大きな流れを一番トップレベルにかく
+* Yuikaさんのevaluate関数のところ、コメントは短くの方がいい？

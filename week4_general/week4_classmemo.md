@@ -30,15 +30,12 @@
 * グラフの順番つける練習してみて！
 * Aから深さ優先探索してるのか、Gからたどれるノードをすべてたどる　→　Eからたどれるノードをすべてたどる　→　Bからたどれるノードをすべてたどるという意味で深さ優先
 * DFSの方法は一つじゃない！！
-* nodeを辿る順序が変わるだけ、DFSは深く深くというだけでじゅんばんとうがきまっていないから　[](https://docs.google.com/presentation/d/1m6uTcNhnmjky578GVXMbyOCu2-yM4lNqU8FR5eJdx_I/edit?slide=id.g24e5a167191_0_3#slide=id.g24e5a167191_0_3)
-* たどらないedgeがあると思ったけど、辿った上で行かないと判断してるだけ。`for child in links[node]: #このループは合計 E 回まわるから`
-* あれそしたらE以上になるかのうせいあるくね？
-* 計算量O(N+E)とする説もあるが、E本のedgeで辿れるノードは最大EだからO(E)があってる
+* nodeを辿る順序が変わるだけ、DFSは深く深くというだけで順番などがきまっていないから　[](https://docs.google.com/presentation/d/1m6uTcNhnmjky578GVXMbyOCu2-yM4lNqU8FR5eJdx_I/edit?slide=id.g24e5a167191_0_3#slide=id.g24e5a167191_0_3)
+* 時間計算量O(N+E)とする説もあるが、E本のedgeで辿れるノードは最大EだからO(E)があってる
 * 手法や順書が違うだけで、探索中のノードから未選択のノードを見つけていく。DFSBFSはやってることは同じ。
 * DFS：スタック、再帰（スタックと再帰の関連）、BFS:キュー
-* フロベニウスの定理を使う時に行列の要素が正の数じゃないといけない
+* Pagerank　フロベニウスの定理を使う時に行列の要素が正の数じゃないといけない
 * largeは6GBのメモリ必要
 * [データセットの説明](https://docs.google.com/presentation/d/1m6uTcNhnmjky578GVXMbyOCu2-yM4lNqU8FR5eJdx_I/edit?slide=id.g1e13c1d4e24_1_507#slide=id.g1e13c1d4e24_1_507)
-* 日本がトップになるらしいよ
 * NP困難とは
-* フラグを立てる場所や、Pの選び方によって経路が変わる
+* フラグを立てる場所や、Pの選び方によって経路が変わる　詳しくはhomework summaryをみて。
