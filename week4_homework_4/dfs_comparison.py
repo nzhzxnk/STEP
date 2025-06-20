@@ -93,10 +93,10 @@ def dfs_with_stack_in_the_recursion_order(start, goal):
     previous[start] = None
     while len(stack):
         node = stack.pop()
-        if node == goal:
-            break
         if visited[node]:
             continue
+        if node == goal:
+            break
         visited[node] = True 
         for child in sorted(links[node], reverse=True): 
             if not child in visited:

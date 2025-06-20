@@ -27,9 +27,8 @@ class Wikipedia:
                 self.dst_links[id] = []
                 self.src_links[id] = []
         print("Finished reading %s" % pages_file)
-
         self.ids = {title:id for id,title in self.titles.items()}
-
+        
         # Read the links file into self.dst_links.
         with open(links_file) as file:
             for line in file:
