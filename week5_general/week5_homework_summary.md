@@ -1,11 +1,11 @@
 ## Homework
-
+---
 ### 内容
 * 巡回セールスマン問題 (Travelling Salesperson Problem, TSP) を解決するアルゴリズムを設計
 * 都市のリストと、各都市間の距離が与えられたとき、各都市をちょうど一度ずつ訪問し、出発地に戻る最短経路は何か？
 * 各出力ファイル output_{0-6}.csv を、あなたのプログラムの出力で上書きする。
 * 出力の経路長をスコアボードに入力。もちろん経路は短いほど良い。
-
+---
 ### データフォーマット
 #### 各ファイルの説明
 | Challenge   | N (= the number of cities) | Input file   | Output file  |
@@ -48,7 +48,7 @@ v_1
 ...
 v_N-1
 ```
-
+---
 ### 方針
 * Nの規模に応じて、最適なヒューリスティクスを考えたい。
 
@@ -66,13 +66,13 @@ v_N-1
 **大域的な最適化（メタヒューリスティクス）**
 * 焼きなまし法 (Simulated Annealing)
 * 禁断探索法 (Taboo Search): 探索済みの解にすぐ戻ってしまう (= 探索がループしてしまう) ことが少なくなることが期待される
-
+---
 ### 提出コード
 * [solver_taboo](https://github.com/nzhzxnk/STEP/blob/main/week5_homework/solver_taboo.py)　
 * [output_generator](https://github.com/nzhzxnk/STEP/blob/main/week5_homework/output_generator.py)
 * 貪欲法の一つである最近傍法 (Nearest Neighbor)を使って暫定の経路を求めた。
 * 禁断探索法、2opt法を何度か反復して行い、経路を修正した。
-
+---
 ### 説明
 * 解を適当に作り、暫定解 X とする。最良解 B を X で初期化する。禁断リストを空で初期化する。禁断リストのサイズの上限を決める
 * 一定の回数、以下を繰り返す
@@ -80,7 +80,7 @@ v_N-1
 * 最良解 B を解として出力する
 * 巡回路 X に含まれる 2 本の辺を繋ぎ変えたものを X の近傍とする
 * 禁断リストには繋ぎ変えた辺の端点のうち巡回路 X の先頭に最も近い都市 t を入れる。つまり、t を端点として持つ辺を繋ぎ変えて解を更新した後しばらくは（禁断リストにいる間は）、t を端点として持つ辺は繋ぎ変えない
-
+---
 ### 結果
 * iteration_numは改善を行う回数、max_length_tabooはタブーリストの大きさ
 * iteration_num = 50, max_length_taboo = 5
@@ -95,6 +95,6 @@ v_N-1
 | Challenge 6 | 45022.77    | 1374393.14      | 49892.05        | 44393.89        |
 * iteration_num = 75, max_length_taboo = 5
 * これらの数をできるだけ増やしていけば精度上がるはず、時間ある時に確かめる
-
+---
 ### 考察（計算量など）
-
+これからかきます
