@@ -83,16 +83,6 @@ v_N-1
 ---
 ### 結果
 * iteration_numは改善を行う回数、max_length_tabooはタブーリストの大きさ
-* iteration_num = 100, max_length_taboo = 5
-| Challenge   | output      | sample/random   | sample/greedy   | sample/sa       |
-| :---------- | :---------- | :-------------- | :-------------- | :-------------- |
-| Challenge 0 | 3291.62     | 3862.20         | 3418.10         | 3291.62         |
-| Challenge 1 | 3832.29     | 6101.57         | 3832.29         | 3778.72         |
-| Challenge 2 | 4712.87     | 13479.25        | 5449.44         | 4494.42         |
-| Challenge 3 | 8604.78     | 47521.08        | 10519.16        | 8150.91         |
-| Challenge 4 | 11089.77    | 92719.14        | 12684.06        | 10675.29        |
-| Challenge 5 | 20915.73    | 347392.97       | 25331.84        | 21119.55        |
-| Challenge 6 | 43441.44    | 1374393.14      | 49892.05        | 44393.89 
 
 * iteration_num = 150, max_length_taboo = 10
 | Challenge   | output      | sample/random   | sample/greedy   | sample/sa       |
@@ -148,8 +138,10 @@ v_N-1
 | Challenge 4 | 10935.95    | 92719.14        | 12684.06        | 10675.29        |
 | Challenge 5 | 20952.14    | 347392.97       | 25331.84        | 21119.55         |
 | Challenge 6 | 41425.14    | 1374393.14      | 49892.05        | 44393.89        |
+* iteration_num = 1000, max_length_taboo = 20でも結果変わらず。
 
-* これらの数をできるだけ増やしていけば精度上がるはず、時間ある時に確かめる
+* これらの数をできるだけ増やしていけば精度上がる、というわけでもなかった。
+* max_length_taboo = 20くらいの時がいいのか
 
 ---
 ### 考察（計算量など）
