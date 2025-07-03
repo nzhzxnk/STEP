@@ -17,6 +17,8 @@ def calc_length(tour, address_list): # 与えられた訪問順序 tour に従�
 # 初期の訪問経路を作成する(最近傍法:最も近い都市から訪れる貪欲法)
 def solve(address_list): 
     n = len(address_list)
+    if n == 0:
+        return []
     # 既に訪問した都市を記録するためのセット
     visited_index = {0} # 最初の都市 (インデックス0) から開始
     tour = [0] # 訪問経路を格納するリスト
@@ -93,7 +95,6 @@ if __name__ == '__main__':
 
     assert len(sys.argv) > 1 
     input_file_path = sys.argv[1]
-
     address_list = read_input(input_file_path) # 入力ファイルから座標を読み込む
     tour = solve(address_list) # 初期経路を取得
     iteration_num , max_length_taboo = 50, 5 #  iteration_numは改善を行う回数、max_length_tabooはタブーリストの大きさ、自分で決めれらる

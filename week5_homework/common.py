@@ -6,7 +6,6 @@ def read_input(filename):
             cities.append((float(xy[0]), float(xy[1])))
         return cities
 
-
 def format_tour(tour):
     return 'index\n' + '\n'.join(map(str, tour))
 
