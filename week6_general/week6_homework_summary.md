@@ -16,7 +16,7 @@
 | Challenge 5 | 512                        | input_5.csv  | taboo_5.csv  | divide_6.csv |
 | Challenge 6 | 2048                       | input_6.csv  | taboo_6.csv  | divide_6.csv |
 | Challenge 7 | 8192                       | input_7.csv  | taboo_7.csv  | divide_7.csv |
-詳しくは[week5_homework_summary]()を参照
+詳しくは[week5_homework_summary](https://github.com/nzhzxnk/STEP/blob/main/week5_general/week5_homework_summary.md)を参照
 
 ---
 ### 方針
@@ -38,13 +38,13 @@
 
 ---
 ### 提出コード
-* [solver_divide](https://github.com/nzhzxnk/STEP/blob/main/week5_homework/solver_taboo.py)　
-* [divide_output_generator](https://github.com/nzhzxnk/STEP/blob/main/week5_homework/output_generator.py)
+* [solver_divide](https://github.com/nzhzxnk/STEP/blob/main/week6_homework/solver_divide.py)　
 * 基本のTSPは、最近傍法 (Nearest Neighbor)を使って暫定経路を求め、禁断探索法、2opt法を何度か反復して行い経路を修正する方針とした。
 * ゾーンを2行3列に分割し一周まわる経路を基準とし、ゾーン内での最短巡回経路を求め繋げる方法を実装した。
+* クラス変数インスタンス変数を使い分けて実装した
 ---
 ### 結果
-* iteration_num=750、max_length_taboo=20で試していきたい
+* iteration_num=500、max_length_taboo=20で試していきたい
 
 ---
 ### 考察（計算量など）

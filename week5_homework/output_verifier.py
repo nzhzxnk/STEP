@@ -16,7 +16,7 @@ def verify_output():
         print(f'Challenge {challenge_number}')
         cities = read_input(f'input_{challenge_number}.csv')
         N = len(cities)
-        for output_prefix in ('output/divide','output/taboo', 'sample/random', 'sample/greedy', 'sample/sa'):
+        for output_prefix in ('divide','output/taboo', 'sample/random', 'sample/greedy', 'sample/sa'):
             output_file = f'{output_prefix}_{challenge_number}.csv'
             with open(output_file) as f:
                 lines = f.readlines()
