@@ -62,7 +62,7 @@ void my_remove_from_free_list(my_metadata_t *metadata)
 void my_merge_free_list(my_metadata_t *metadata)
 {
   // free_listを辿ったnext_metadataのアドレスと、metadataのfree_blockの次のブロックのアドレスが一致していれば、次もfree_blockが連続していることになる。
-  if (metadata->prev != &my_heap.dummy_head && metadata->next != &my_heap.dummy_tail)
+  if (metadata->prev != &my_heap.dummy_head && metadata->prev != &my_heap.dummy_head)
   {
     if (metadata->next == (my_metadata_t *)((char *)metadata + sizeof(my_metadata_t) + metadata->size))
     {
@@ -81,38 +81,20 @@ void my_merge_free_list(my_metadata_t *metadata)
   }
 }
 
-void my_add_to_free_list(my_metadata_t *metadata) // アドレス順に連結リストを保存
+void my_add_to_free_list(my_metadata_t *metadata)
 {
-  assert(!metadata->next && !metadata->prev); // free_listでなければエラー
-  // アドレス順に挿入位置を探す
-  my_metadata_t *current = my_heap.free_head->next; // ダミーヘッドから開始
-  // metadataのアドレスがcurrentのアドレスよりも大きくなるまで進む
-  // currentはmetadataの物理的な前、または挿入位置になるはずのノード
-  if (current == &my_heap.dummy_tail || (uintptr_t)metadata < (uintptr_t)current)
-  {
-    metadata->next = my_heap.free_head->next;
-    metadata->prev = my_heap.free_head;
-    metadata->next->prev = metadata;
-    my_heap.free_head->next = metadata;
-  }
-  else
-  {
-    while (current->next != &my_heap.dummy_tail && (uintptr_t)current < (uintptr_t)metadata)
-    {
-      current = current->next;
-    }
-    // (uintptr_t)current < (uintptr_t)metadata <= (uintptr_t)current->nextとなるはずなので、metadataは間に入る
-    metadata->next = current->next;
-    metadata->prev = current;
-    metadata->next->prev = metadata;
-    current->next = metadata;
-  }
+  assert(!metadata->next && !metadata->prev);
+  metadata->next = my_heap.free_head->next;
+  metadata->prev = my_heap.free_head;
+  metadata->next->prev = metadata;
+  my_heap.free_head->next = metadata;
 }
 
 void my_add_new_memory()
 {
   size_t buffer_size = 4096;
-  my_metadata_t *new_metadata = (my_metadata_t *)mmap_from_system(buffer_size);
+  my_metadata_t *new_metadata =
+      (my_metadata_t *)mmap_from_system(buffer_size);
   new_metadata->size = buffer_size - sizeof(my_metadata_t);
   new_metadata->next = NULL;
   new_metadata->prev = NULL;
@@ -145,49 +127,37 @@ void *my_malloc(size_t size)
 {
   // metadata配列(free_list)の先頭と、その直前のポインタを設定
   my_metadata_t *metadata = my_heap.free_head; // metadata配列の先頭ポインタ
-
-  // Best-fit: Find the smallest free slot that fits the object.
-  my_metadata_t *best_fit_metadata = NULL; // 最適なfree_blockのmetadataを指すポインタ
-  size_t min_diff = (size_t)-1;            // size_t(符号なし整数型)が取れる最大値で初期化。
-  // モジュロ演算（剰余演算）で-1は全てのビットが1であると表現されるので最大値になる。
-
-  while (metadata) // metadata配列の最後まで走査
-  {
-    if (metadata->size >= size)
-    { // 要求されたsizeを満たすブロックである場合
-      size_t current_diff = metadata->size - size;
-      if (current_diff < min_diff)
-      { // かつ現時点でのfree_blockの最小値より小さい場合、best_fit_metadata, best_fit_prev, min_diffを更新
-        best_fit_metadata = metadata;
-        min_diff = current_diff;
-      }
-    }
-    metadata = metadata->next; // metadataを次の要素へ更新
-  }
-  // ループが終了後のbest_fit_metadata, best_fit_prevが最適なfree_blockの情報なので、meatadata, prevにアドレスを代入
-  metadata = best_fit_metadata;
-
-  // 最適な空きスロットが見つからなかった場合、新たなメモリをOSにお願いする(void *mmap_from_system)
-  if (!metadata)
-  {
-    my_add_new_memory();    // 新たなメモリを追加し、free_listに繋げる
-    return my_malloc(size); // 新たなメモリ領域を確保したので再帰で呼び出し
+// First-fit: Find the first free slot the object fits.
+  // TODO: Update this logic to Best-fit!
+  while (metadata && metadata->size < size) {
+    metadata = metadata->next;
   }
 
-  // メモリの割り当て
-  void *ptr = metadata + 1;                      // ptr(割り当てる領域の開始アドレス)はmetadataの次のアドレス
-  size_t remaining_size = metadata->size - size; // 割り当て後の残りサイズを計算
-  my_remove_from_free_list(metadata);            // メモリを割り当て、その領域をfree_listから削除
-  if (remaining_size > sizeof(my_metadata_t))    // my_metadata_tが入る大きさ分の残りサイズがある場合のみ、残りをfree_listに繋げる
-  {
+  if (!metadata) {
+    size_t buffer_size = 4096;
+    my_metadata_t *metadata = (my_metadata_t *)mmap_from_system(buffer_size);
+    metadata->size = buffer_size - sizeof(my_metadata_t);
+    metadata->next = NULL;
+    // Add the memory region to the free list.
+    my_add_to_free_list(metadata);
+    // Now, try my_malloc() again. This should succeed.
+    return my_malloc(size);
+  }
+  void *ptr = metadata + 1;
+  size_t remaining_size = metadata->size - size;
+  // Remove the free slot from the free list.
+  my_remove_from_free_list(metadata);
+
+  if (remaining_size > sizeof(my_metadata_t)) {
     metadata->size = size;
     my_metadata_t *new_metadata = (my_metadata_t *)((char *)ptr + size);
     new_metadata->size = remaining_size - sizeof(my_metadata_t);
     new_metadata->next = NULL;
     new_metadata->prev = NULL;
+    // Add the remaining free slot to the free list.
     my_add_to_free_list(new_metadata);
   }
-  return ptr; // ptr(割り当てる領域の開始アドレス)を返す
+  return ptr;
 }
 
 // This is called every time an object is freed.  You are not allowed to
@@ -223,29 +193,29 @@ void test()
 // ====================================================
 // Challenge #1    |   simple_malloc =>       my_malloc
 // --------------- + --------------- => ---------------
-//        Time [ms]|              11 =>            1713
+//        Time [ms]|              11 =>               9
 // Utilization [%] |              70 =>              65
 // ====================================================
 // Challenge #2    |   simple_malloc =>       my_malloc
 // --------------- + --------------- => ---------------
-//        Time [ms]|               7 =>            1111
+//        Time [ms]|               7 =>               9
 // Utilization [%] |              40 =>              31
 // ====================================================
 // Challenge #3    |   simple_malloc =>       my_malloc
 // --------------- + --------------- => ---------------
-//        Time [ms]|             128 =>            1050
-// Utilization [%] |               9 =>              44
+//        Time [ms]|             133 =>             123
+// Utilization [%] |               9 =>               8
 // ====================================================
 // Challenge #4    |   simple_malloc =>       my_malloc
 // --------------- + --------------- => ---------------
-//        Time [ms]|           13943 =>            8310
-// Utilization [%] |              15 =>              73
+//        Time [ms]|           28496 =>           27079
+// Utilization [%] |              15 =>              15
 // ====================================================
 // Challenge #5    |   simple_malloc =>       my_malloc
 // --------------- + --------------- => ---------------
-//        Time [ms]|            8812 =>            4656
-// Utilization [%] |              15 =>              76
+//        Time [ms]|           19787 =>           19152
+// Utilization [%] |              15 =>              15
 
 // Challenge done!
 // Please copy & paste the following data in the score sheet!
-// 1713,65,1111,31,1050,44,8310,73,4656,76,
+// 9,65,9,31,123,8,27079,15,19152,15,

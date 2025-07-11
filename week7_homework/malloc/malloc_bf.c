@@ -80,7 +80,6 @@ void my_remove_from_free_list(my_metadata_t *metadata, my_metadata_t *prev)
 // Interfaces of malloc (DO NOT RENAME FOLLOWING FUNCTIONS!)
 //
 
-// This is called at the beginning of each challenge.
 void my_initialize()
 {
   my_heap.free_head = &my_heap.dummy;
@@ -88,10 +87,6 @@ void my_initialize()
   my_heap.dummy.next = NULL;
 }
 
-// my_malloc() is called every time an object is allocated.
-// |size| is guaranteed to be a multiple of 8 bytes and meets 8 <= |size| <=
-// 4000. You are not allowed to use any library functions other than
-// mmap_from_system() / munmap_to_system().
 void *my_malloc(size_t size)
 {
   // metadata配列(free_list)の先頭と、その直前のポインタを設定
@@ -146,17 +141,9 @@ void *my_malloc(size_t size)
   return ptr; // ptr(割り当てる領域の開始アドレス)を返す
 }
 
-// This is called every time an object is freed.  You are not allowed to
-// use any library functions other than mmap_from_system / munmap_to_system.
 void my_free(void *ptr)
 {
-  // Look up the metadata. The metadata is placed just prior to the object.
-  //
-  // ... | metadata | object | ...
-  //     ^          ^
-  //     metadata   ptr
   my_metadata_t *metadata = (my_metadata_t *)ptr - 1;
-  // Add the free slot to the free list.
   my_add_to_free_list(metadata);
 }
 
