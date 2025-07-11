@@ -19,7 +19,7 @@ make run
 make run_trace
 
 -----
-1. Fitの方法を考える
+## 1. Fitの方法を考える
 
 ### 方針とコード
 * First_fit, Worst_fit, Best_fitを実装し、最適な方法を比較する
@@ -67,7 +67,7 @@ make run_trace
 * First_fitは小規模または固定長のケースには適しているが、その他のケースではBest_fitが最適であると考えた。
 
 -----
-2. free_blockのmergeをする
+## 2. free_blockのmergeをする
 
 ### 方針とコード
 * free_listのポインターをたどって、もしアドレスが隣り合っていたらmergeする。
@@ -122,7 +122,8 @@ make run_trace
 * もしかしたらきちんとマージされていないのかも、確認する方法を考えたい。
 
 -----
-3. mergeの効率を上げるために連結リストの順番を工夫する
+## 3. mergeの効率を上げるために連結リストの順番を工夫する
+
 ### 方針とコード
 * ポインタと次のポインタが指す領域が、メモリ上でも物理的に隣り合っているfree_blockである場合というのは稀であるため、mergeしても効率が上がらなかったと仮定する。
 * free_listを追加順ではなくaddress順に繋げることでこの問題を解決できると考えた。
@@ -154,7 +155,8 @@ make run_trace
 * 連結リストに追加する際に線形探索をするので、実行時間が長くなってしまうかと予想していたが、大規模なテストケースでもそのような問題は見られなかった。
 
 -----
-4. メモリ効率を上げるために連結リストを工夫する
+## 4. メモリ効率を上げるために連結リストを工夫する
+
 ### 方針とコード
 * free_listを大きさごとに複数に分けて保存する(Free List Bin)を実装しないとこれ以上メモリ効率は上がらないと考えた
 * [malloc_bf_bm_flb](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_bf_bm_flb.c)
@@ -177,7 +179,9 @@ void my_add_new_memory()
 }
 ```
 -----
-5. メモリ効率をさらに上げるための工夫
+## 5. メモリ効率をさらに上げるための工夫
+
+### 方針
 * sizeに適合するfree_blockが見つからなかったらすぐにadd_new_memoryを呼び出すのではなく、HashTableのリハッシュのようにfree_blockを全て左側に移動しまとめる処理を挟めば、メモリ効率をもっと上げることができるのではないかと考えた。
 * all_list: free_blockもallocated_blockを両方address順に繋げる。双方向連結リスト。
 * mergeの際にはall_listの前または後のフラグがfreeであることを確認すれば良い。
