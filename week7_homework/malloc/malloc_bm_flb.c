@@ -155,31 +155,6 @@ void my_add_to_all_list(my_metadata_t *metadata)
   //        (void*)metadata, (void*)metadata->all_prev, (void*)metadata->all_next);
 }
 
-// void my_add_to_all_list(my_metadata_t *metadata)
-// {
-//   assert(!metadata->all_next && !metadata->all_prev);
-
-//   my_metadata_t *current = &my_heap.all_dummy_head;
-
-//   // metadataのアドレスがcurrent->all_nextのアドレスよりも大きくなるまで進む
-//   // currentはmetadataの物理的な前、または挿入位置になるはずのノード
-//   // このループ後、metadata は current と current->all_next の間に挿入されるべき
-//   while ((uintptr_t)current < (uintptr_t)metadata)
-//   {
-//     my_metadata_t *final = my_heap.all_dummy_tail.all_prev;
-//     printf("current: %p, current->all_next: %p, metadata: %p, final: %p\n", current, current->all_next, metadata, final);
-//     if (current->all_next == &my_heap.all_dummy_tail){break;}
-//     current = current->all_next;
-
-//   }
-//   assert(current != metadata);
-//   metadata->all_next = current->all_next;
-//   metadata->all_prev = current;
-//   printf("current->all_next : %p",current->all_next);
-//   current->all_next->all_prev = metadata;
-//   current->all_next = metadata;
-// }
-
 void my_remove_from_all_list(my_metadata_t *metadata)
 { // 基本all_listの要素は削除されないが,mergeでfree_listが結合した時にだけ使う
   assert(!metadata->is_allocated);
@@ -208,33 +183,31 @@ void my_remove_from_bin_list(my_metadata_t *metadata)
 }
 
 void my_merge_free_block(my_metadata_t *metadata)
+// my_merge_free_block が呼ばれるとき、current_block（my_freeされたブロック）は、もともとallocatedだったのでbinリストにはいない！
 {
-  assert(!metadata->is_allocated); // 基本metadataがfreeの時しかmerge呼び出さない
-                                   // assert(metadata->all_next == (my_metadata_t *)((char *)metadata + sizeof(my_metadata_t) + metadata->size));
-                                   // assert(metadata == (my_metadata_t *)((char *)metadata->all_prev + sizeof(my_metadata_t) + metadata->all_prev->size));
-  bool is_head = true;
+  assert(!metadata->is_allocated);
+  my_metadata_t *current_block = metadata;
 
-  // all_listを辿ったnextのフラグもfalseなら結合
-  if (!metadata->all_next->is_allocated && metadata->all_next != &my_heap.all_dummy_tail)
+  // right_merge
+  my_metadata_t *next_block = current_block->all_next;
+  if (next_block != &my_heap.all_dummy_tail && !next_block->is_allocated)
   {
-    my_metadata_t *next_node_to_merge = metadata->all_next;
-    my_remove_from_all_list(metadata->all_next);                        // next_metadataをフリーリストから削除し、free_listを繋ぎ直す
-    my_remove_from_bin_list(metadata->all_next);                        // next_metadataをフリーリストから削除し、free_listを繋ぎ直す
-    metadata->size += sizeof(my_metadata_t) + next_node_to_merge->size; // 解放ブロックのサイズを、隣の空きブロックのサイズとメタデータ分だけ増やす
+    my_remove_from_bin_list(next_block); // next_blockをまずbinリストから削除
+    my_remove_from_all_list(next_block);
+    current_block->size += sizeof(my_metadata_t) + next_block->size; // current_blockのsizeを合算し更新
   }
-  // all_listを辿ったnextのフラグもfalseなら結合
-  if (!metadata->all_prev->is_allocated && metadata->all_prev != &my_heap.all_dummy_head)
+
+  // left_merge
+  my_metadata_t *prev_block = current_block->all_prev;
+  if (prev_block != &my_heap.all_dummy_head && !prev_block->is_allocated)
   {
-    my_metadata_t *prev_node_to_merge = metadata->all_prev;
-    my_remove_from_all_list(metadata);                                  // metadataをフリーリストから削除し、free_listを繋ぎ直す
-    my_remove_from_bin_list(metadata);                                  // next_metadataをフリーリストから削除し、free_listを繋ぎ直す
-    prev_node_to_merge->size += sizeof(my_metadata_t) + metadata->size; // 解放ブロックのサイズを、隣の空きブロックのサイズとメタデータ分だけ増やす
-    is_head = false;
+    my_remove_from_bin_list(prev_block); // next_blockをまずbinリストから削除
+    my_remove_from_all_list(current_block);
+    prev_block->size += sizeof(my_metadata_t) + current_block->size; // current_blockのsizeを合算し更新
+    current_block = prev_block;
   }
-  if (is_head)
-  {
-    my_add_to_bin_list(metadata);
-  }
+  // 最後に、最終的な大きさになったブロックを、正しいbinに追加
+  my_add_to_bin_list(current_block);
 }
 
 void my_add_new_memory()
@@ -255,40 +228,72 @@ void my_add_new_memory()
 
 void *my_malloc(size_t size)
 {
-  int bin_index = my_get_bin_index(size);
-  my_metadata_t *metadata = my_heap.bin_head[bin_index]->bin_next; // free_listの先頭ポインタ
-  // Best-fit: Find the smallest free slot that fits the object.
-  my_metadata_t *best_fit_metadata = NULL; // 最適なfree_blockのmetadataを指すポインタ
-  size_t min_diff = (size_t)-1;            // size_t(符号なし整数型)が取れる最大値で初期化。
-  // モジュロ演算（剰余演算）で-1は全てのビットが1であると表現されるので最大値になる。
+  my_metadata_t *best_fit_metadata = NULL;
 
-  while (metadata != &my_heap.bin_dummy_tail[bin_index]) // ダミーテールまで走査
+  // 要求されたサイズのbinから、最後のbinまで順番にすべて探す
+  for (int bin_index = my_get_bin_index(size); bin_index < NUM_BINS; bin_index++)
   {
-    assert(!metadata->is_allocated);
-    if (metadata->size >= size)
-    { // 要求されたsizeを満たすブロックである場合
-      size_t current_diff = metadata->size - size;
-      if (current_diff <= min_diff)
-      { // かつ現時点でのfree_blockの最小値以下の場合、best_fit_metadata, best_fit_prev, min_diffを更新
-        best_fit_metadata = metadata;
-        min_diff = current_diff;
+    my_metadata_t *metadata = my_heap.bin_head[bin_index]->bin_next;
+    while (metadata != &my_heap.bin_dummy_tail[bin_index])
+    {
+      // このブロックは要求サイズを満たしているか？
+      if (metadata->size >= size)
+      {
+        // 満たしている場合、今まで見つけたベストなブロックよりも「さらに良い」か？
+        // 「良い」とは、サイズがより小さいこと（ただし要求サイズは満たす）
+        if (best_fit_metadata == NULL || metadata->size < best_fit_metadata->size)
+        {
+          // こっちの方が良い候補なので、ベストを更新する
+          best_fit_metadata = metadata;
+        }
       }
+      metadata = metadata->bin_next;
     }
-    metadata = metadata->bin_next; // metadataを次の要素へ更新
   }
-  // ループが終了後のbest_fit_metadata, best_fit_prevが最適なfree_blockの情報なので、meatadata, prevにアドレスを代入
-  metadata = best_fit_metadata;
 
-  // 最適な空きスロットが見つからなかった場合、新たなメモリをOSにお願いする(void *mmap_from_system)
-  if (!metadata)
+  // First fit
+  //   for (int bin_index = my_get_bin_index(size); bin_index < NUM_BINS; bin_index++)
+  //   {
+  //     my_metadata_t *metadata = my_heap.bin_head[bin_index]->bin_next;
+  //     while (metadata != &my_heap.bin_dummy_tail[bin_index])
+  //     {
+  //       if (metadata->size >= size)
+  //       {
+  //         // ここでは最初に見つかったものを採用するシンプルな形にする
+  //         best_fit_metadata = metadata;
+  //         goto found; // 見つかったらループを抜ける
+  //       }
+  //       metadata = metadata->bin_next;
+  //     }
+  //   }
+  // found:; // ループを抜けるためのラベル
+
+  // 最適な空きスロットが見つからなかった場合
+  if (!best_fit_metadata)
   {
-    my_add_new_memory();    // 新たなメモリを追加し、free_listに繋げる
-    return my_malloc(size); // 新たなメモリ領域を確保したので再帰で呼び出し
+    // 要求サイズを満たすメモリを確保するようにする
+    size_t buffer_size = 4096;
+    if (size + sizeof(my_metadata_t) > buffer_size)
+    {
+      buffer_size = size + sizeof(my_metadata_t);
+    }
+    my_metadata_t *new_metadata = (my_metadata_t *)mmap_from_system(buffer_size);
+    new_metadata->size = buffer_size - sizeof(my_metadata_t);
+    new_metadata->is_allocated = false;
+    new_metadata->all_next = NULL;
+    new_metadata->all_prev = NULL;
+    new_metadata->bin_next = NULL;
+    new_metadata->bin_prev = NULL;
+    my_add_to_all_list(new_metadata);
+    my_add_to_bin_list(new_metadata);
+
+    return my_malloc(size); // 再帰で呼び出し
   }
 
   // メモリの割り当て
-  metadata->is_allocated = true; // ptr(割り当てる領域の開始アドレス)はmetadataの次のアドレス
+  my_metadata_t *metadata = best_fit_metadata; // ptr(割り当てる領域の開始アドレス)はmetadataの次のアドレス
   my_remove_from_bin_list(metadata);
+  metadata->is_allocated = true;
   void *ptr = metadata + 1;
   size_t remaining_size = metadata->size - size;
   if (remaining_size > sizeof(my_metadata_t)) // my_metadata_tが入る大きさ分の残りサイズがある場合のみ、残りをfree_listに繋げる
@@ -297,12 +302,15 @@ void *my_malloc(size_t size)
     my_metadata_t *new_metadata = (my_metadata_t *)((char *)ptr + size);
     new_metadata->size = remaining_size - sizeof(my_metadata_t);
     new_metadata->is_allocated = false;
-    new_metadata->all_next = NULL;
-    new_metadata->all_prev = NULL;
     new_metadata->bin_next = NULL;
     new_metadata->bin_prev = NULL;
+
+    // アドレス順に探すのではなく前後繋ぎ直す
+    new_metadata->all_next = metadata->all_next;
+    new_metadata->all_prev = metadata;
+    metadata->all_next->all_prev = new_metadata;
+    metadata->all_next = new_metadata;
     my_add_to_bin_list(new_metadata); // 新たに追加された領域をfree_listに追加する
-    my_add_to_all_list(new_metadata); // 新たに追加された領域をfree_listに追加する
   }
   return ptr; // ptr(割り当てる領域の開始アドレス)を返す
 }
@@ -310,9 +318,15 @@ void *my_malloc(size_t size)
 void my_free(void *ptr)
 {
   my_metadata_t *metadata = (my_metadata_t *)ptr - 1;
-  metadata->is_allocated = false;
+  // すでに解放済みだったら、何もせずにリターンする
+  if (!metadata->is_allocated)
+  {
+    fprintf(stderr, "Error: Double free detected for pointer %p\n", ptr);
+    return;
+  }
   metadata->bin_next = NULL;
   metadata->bin_prev = NULL;
+  metadata->is_allocated = false;
   my_merge_free_block(metadata);
 }
 
@@ -329,5 +343,64 @@ void test()
   assert(1 == 1); /* 1 is 1. That's always true! (You can remove this.) */
 }
 
-// RESULT
-//実行時間長すぎて使い物にならない
+// RESULT (First Fit)
+// ====================================================
+// Challenge #1    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|              11 =>              24
+// Utilization [%] |              70 =>              57
+// ====================================================
+// Challenge #2    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|               7 =>              12
+// Utilization [%] |              40 =>              20
+// ====================================================
+// Challenge #3    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|             146 =>              18
+// Utilization [%] |               9 =>              29
+// ====================================================
+// Challenge #4    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|           28099 =>             100
+// Utilization [%] |              15 =>              72
+// ====================================================
+// Challenge #5    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|           18992 =>              75
+// Utilization [%] |              15 =>              74
+
+// Challenge done!
+// Please copy & paste the following data in the score sheet!
+// 24,57,12,20,18,29,100,72,75,74,
+
+// RESULT (Best Fit)
+// ====================================================
+// Challenge #1    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|              12 =>             380
+// Utilization [%] |              70 =>              57
+// ====================================================
+// Challenge #2    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|               7 =>             238
+// Utilization [%] |              40 =>              20
+// ====================================================
+// Challenge #3    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|             156 =>             243
+// Utilization [%] |               9 =>              30
+// ====================================================
+// Challenge #4    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|           24284 =>             235
+// Utilization [%] |              15 =>              74
+// ====================================================
+// Challenge #5    |   simple_malloc =>       my_malloc
+// --------------- + --------------- => ---------------
+//        Time [ms]|           22220 =>             199
+// Utilization [%] |              15 =>              75
+
+// Challenge done!
+// Please copy & paste the following data in the score sheet!
+// 380,57,238,20,243,30,235,74,199,75,

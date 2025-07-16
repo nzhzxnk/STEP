@@ -25,7 +25,7 @@ void munmap_to_system(void *ptr, size_t size);
 // Struct definitions
 //
 
-typedef struct my_metadata_t
+typedef struct my_metadata_t // これが
 {
   size_t size;
   struct my_metadata_t *next;
@@ -62,7 +62,7 @@ void my_remove_from_free_list(my_metadata_t *metadata)
 void my_merge_free_list(my_metadata_t *metadata)
 {
   // free_listを辿ったnext_metadataのアドレスと、metadataのfree_blockの次のブロックのアドレスが一致していれば、次もfree_blockが連続していることになる。
-  if (metadata->prev != &my_heap.dummy_head && metadata->prev != &my_heap.dummy_head)
+  if (metadata->prev != &my_heap.dummy_head && metadata->next != &my_heap.dummy_tail)
   {
     if (metadata->next == (my_metadata_t *)((char *)metadata + sizeof(my_metadata_t) + metadata->size))
     {
@@ -80,6 +80,7 @@ void my_merge_free_list(my_metadata_t *metadata)
     }
   }
 }
+//https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_bf_bm.c#L62
 
 void my_add_to_free_list(my_metadata_t *metadata)
 {

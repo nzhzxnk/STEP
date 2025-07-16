@@ -108,7 +108,7 @@ void *my_merge_free_list(my_metadata_t *metadata)
 {
   int bin_index = my_get_bin_index(metadata->size); // サイズから適切なビンを決定
   // free_listを辿ったnext_metadataのアドレスと、metadataのfree_blockの次のブロックのアドレスが一致していれば、次もfree_blockが連続していることになる。
-  if (metadata->prev != &my_heap.bin_dummy_head[bin_index] && metadata->prev != &my_heap.bin_dummy_tail[bin_index])
+  if (metadata->prev != &my_heap.bin_dummy_head[bin_index] && metadata->next != &my_heap.bin_dummy_tail[bin_index])
   {
     if (metadata->next == (my_metadata_t *)((char *)metadata + sizeof(my_metadata_t) + metadata->size))
     {
@@ -128,6 +128,8 @@ void *my_merge_free_list(my_metadata_t *metadata)
   }
   return metadata;
 }
+
+
 
 void my_add_to_free_list(my_metadata_t *metadata)
 { // binリストにfree_blockを追加
@@ -221,6 +223,7 @@ void my_free(void *ptr)
   metadata->next = NULL;
   metadata->prev = NULL;
   my_add_to_free_list(metadata);
+  // addする前にmergeする
   my_metadata_t *merged_metadata = my_merge_free_list(metadata);
   my_add_to_free_list(merged_metadata);
 }
@@ -237,25 +240,3 @@ void test()
   // Implement here!
   assert(1 == 1); /* 1 is 1. That's always true! (You can remove this.) */
 }
-
-// RESULT
-// 実行が終わらない、、止めるとここでやられてるらしいが未だ究明できず。
-// Process 58976 launched: '/Users/hayashiayano/Desktop/STEP/week7_homework/malloc/malloc_challenge.bin' (arm64)
-// Welcome to the malloc challenge!
-// size_of(uint8_t *) = 8
-// size_of(size_t) = 8
-// Running tests...
-// Finished!
-
-// Process 58976 stopped
-// * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGSTOP
-//     frame #0: 0x0000000100003200 malloc_challenge.bin`my_malloc [inlined] my_add_new_memory at malloc_bf_bm_flb.c:151:22 [opt]
-//    148        (my_metadata_t *)mmap_from_system(buffer_size);
-//    149    new_metadata->size = buffer_size - sizeof(my_metadata_t);
-//    150    new_metadata->next = NULL;
-// -> 151    new_metadata->prev = NULL;
-//    152    my_add_to_free_list(new_metadata); // 新たに追加された領域をfree_listに追加する
-//    153  }
-//    154 
-// Target 0: (malloc_challenge.bin) stopped.
-// warning: malloc_challenge.bin was compiled with optimization - stepping may behave oddly; variables may not be available.
