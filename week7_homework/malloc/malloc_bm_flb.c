@@ -236,14 +236,10 @@ void *my_malloc(size_t size)
     my_metadata_t *metadata = my_heap.bin_head[bin_index]->bin_next;
     while (metadata != &my_heap.bin_dummy_tail[bin_index])
     {
-      // このブロックは要求サイズを満たしているか？
       if (metadata->size >= size)
       {
-        // 満たしている場合、今まで見つけたベストなブロックよりも「さらに良い」か？
-        // 「良い」とは、サイズがより小さいこと（ただし要求サイズは満たす）
         if (best_fit_metadata == NULL || metadata->size < best_fit_metadata->size)
         {
-          // こっちの方が良い候補なので、ベストを更新する
           best_fit_metadata = metadata;
         }
       }
@@ -271,22 +267,7 @@ void *my_malloc(size_t size)
   // 最適な空きスロットが見つからなかった場合
   if (!best_fit_metadata)
   {
-    // 要求サイズを満たすメモリを確保するようにする
-    size_t buffer_size = 4096;
-    if (size + sizeof(my_metadata_t) > buffer_size)
-    {
-      buffer_size = size + sizeof(my_metadata_t);
-    }
-    my_metadata_t *new_metadata = (my_metadata_t *)mmap_from_system(buffer_size);
-    new_metadata->size = buffer_size - sizeof(my_metadata_t);
-    new_metadata->is_allocated = false;
-    new_metadata->all_next = NULL;
-    new_metadata->all_prev = NULL;
-    new_metadata->bin_next = NULL;
-    new_metadata->bin_prev = NULL;
-    my_add_to_all_list(new_metadata);
-    my_add_to_bin_list(new_metadata);
-
+    my_add_new_memory();
     return my_malloc(size); // 再帰で呼び出し
   }
 

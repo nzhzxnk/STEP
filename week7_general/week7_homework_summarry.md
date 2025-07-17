@@ -75,10 +75,10 @@ make run_trace
 * mergeするタイミングは、allocatedであった空間が解放されてfreeになるとき(my_free)と新たなメモリを追加する時(mmap_from_system)に限られるので、その関数の処理が終わったらmergeすることにした。
 * ポインタと次のポインタが指す領域が、メモリ上でも物理的に隣り合っているfree_blockである場合に、mergeが成立することになっている。
 * both_mergeでは連結リストを双方向にして、prevとnextにすぐアクセスできるように工夫した。
-* [malloc_bf_rm(右側のみ結合)](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_ff_rm.c)
-* [malloc_bf_rm(両側結合)](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_ff_bm.c)
-* [malloc_bf_rm(右側のみ結合)](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_bf_rm.c)
-* [malloc_bf_bm(両側結合)](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_bf_bm.c)
+* [malloc_ff_rm(First_fit, 右側のみ結合)](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_ff_rm.c)
+* [malloc_ff_rm(First_fit, 両側結合)](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_ff_bm.c)
+* [malloc_bf_rm(Best_fit, 右側のみ結合)](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_bf_rm.c)
+* [malloc_bf_bm(Best_fit, 両側結合)](https://github.com/nzhzxnk/STEP/blob/main/week7_homework/malloc/malloc_bf_bm.c)
 
 ### 結果
 ---
@@ -196,3 +196,13 @@ void my_add_new_memory()
 * flb単体もできていないのでやはり実装に問題がああるか？
 * ポインタを追うデバックをしてadd_all_listでの無限ループがあることがわかり、それは解消したが未だ実行終わらない
 * allocated_blockを含めるようにしたので単純にポインタに繋げる量が多くて、さらにaddress順にしているので、かなり膨大な処理になっているのかも、、
+
+## 改善すべき点
+* matadataの中のデータをなるべく減らす。size 64bitもいらん int16とか使えばいい？
+* 全部辿ってcurrとnextを繋ぎ直せば頭から辿る必要はない
+* gerbage collector
+* mark and skip copying gc compaction 辿り着けなくなったやつを消す
+右隣のメモリを参照するときに、そのメモリが今回私が触っていいメモリなのかということの確認をしないと、全く関係のないファイルが保持しているメモリを書き換えてしまう可能性が出てくる。
+* binが綺麗に分散するように分ける
+* 不要なページをリターン？
+* "ポインタ+ポインタ"はコンパイルエラー
