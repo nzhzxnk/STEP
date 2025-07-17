@@ -33,6 +33,7 @@
 | malloc_bm_flb.c (Best Fit) | 380 | 57 | 238 | 20 | 243 | 30 | 235 | 74 | 189 | 75 |
 ---
 * First fit
+---
 | Allocator | Time1 (ms) | Util1 (%) | Time2 (ms) | Util2 (%) | Time3 (ms) | Util3 (%) | Time4 (ms) | Util4 (%) | Time5 (ms) | Util5 (%) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | simple_malloc.c | 7 | 70 | 5 | 40 | 102 | 9 | 23645 | 15 | 13719 | 15 |
@@ -65,6 +66,7 @@
 | malloc_bm_flb_2.c (Best Fit) | 274 | 60 | 219 | 22 | 180 | 33 | 167 | 75 | 152 | 76 |
 ---
 * First fit
+---
 | Allocator | Time1 (ms) | Util1 (%) | Time2 (ms) | Util2 (%) | Time3 (ms) | Util3 (%) | Time4 (ms) | Util4 (%) | Time5 (ms) | Util5 (%) |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | simple_malloc.c | 7 | 70 | 5 | 40 | 102 | 9 | 23645 | 15 | 13719 | 15 |
